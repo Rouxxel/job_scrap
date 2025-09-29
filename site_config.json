@@ -1,0 +1,421 @@
+{
+    "search_config":{
+        "maxPagesPerQuery": 3,
+        "maxLinkExtractor":1,
+        "batchSizeSitemapLinkLoop":25,
+        "batchSizeJobLinkLoop":1,
+        "pageLanguage":"en",
+        "linkEtiquetteFilter": [
+            "/job",
+            "/jobs",
+            "/job-detail",
+            "/jobdetails",
+            "/job-openings",
+            "/job-opening",
+            "/job-description",
+            "/jobdesc",
+            "/jobposting",
+            "/job-posting",
+            "/jobad",
+            "/job-ad",
+            "/offer",
+            "/offers",
+            "/job-offer",
+            "/job-offers",
+            "/careers",
+            "/career",
+            "/career-opportunities",
+            "/employment",
+            "/opportunity",
+            "/opportunities",
+            "/positions",
+            "/position",
+            "/vacancies",
+            "/vacancy",
+            "/viewjob",
+            "/jobs-guest",
+            "/recruitment",
+            "/hiring",
+            "/apply",
+            "/application"
+        ],
+        "search_keywords": [
+            "software engineer",
+            "junior software developer",
+            "junior software engineer",
+            "graduate software engineer",
+            "graduate software developer",
+            "junior",
+            "graduate",
+            "entry",
+            "trainee",
+            "practice",
+            "apprenticeship",
+            "full time",
+            "entry level developer",
+            "backend developer",
+            "backend engineer",
+            "fullstack developer",
+            "full stack engineer",
+            "frontend developer",
+            "frontend engineer",
+            "react developer",
+            "reactjs developer",
+            "react engineer",
+            "typescript developer",
+            "typescript engineer",
+            "javascript developer",
+            "javascript engineer",
+            "web developer",
+            "web engineer",
+            "UI developer",
+            "UI engineer",
+            "UX developer",
+            "python developer",
+            "python engineer",
+            "java developer",
+            "java engineer",
+            "C++ developer",
+            "C++ engineer",
+            "C# developer",
+            "dotnet developer",
+            "unity developer",
+            "game developer",
+            "C/C++",
+            "c/c++",
+            "C++",
+            "c++",
+            "python",
+            "java",
+            "react",
+            "c#",
+            "C#",
+            "backend",
+            "back end",
+            "fronted",
+            "front end",
+            "developer",
+            "fullstack",
+            "full stack",
+            "programmer",
+            "ts",
+            "TS",
+            "typescript",
+            "TypeScript",
+            "Typescript",
+            "html",
+            "html5",
+            "css",
+            "css3",
+            "sql",
+            "mysql",
+            "nosql",
+            "no-sql",
+            "mobile developer",
+            "android developer",
+            "flutter developer",
+            "ios developer",
+            "cross platform developer",
+            "app developer",
+            "REST API developer",
+            "API engineer",
+            "microservices developer",
+            "microservices engineer",
+            "docker engineer",
+            "docker developer",
+            "cloud engineer",
+            "cloud developer",
+            "devops engineer",
+            "devops developer",
+            "infrastructure engineer",
+            "systems engineer",
+            "platform engineer",
+            "application engineer",
+            "software consultant",
+            "junior programmer",
+            "ML engineer",
+            "AI engineer",
+            "machine learning engineer",
+            "deep learning engineer",
+            "data engineer",
+            "data developer",
+            "data scientist",
+            "AI developer",
+            "automation engineer",
+            "RPA developer",
+            "backend java developer",
+            "backend python developer",
+            "frontend react developer",
+            "fullstack react developer",
+            "junior backend developer",
+            "junior frontend developer",
+            "junior fullstack developer",
+            "junior devops engineer",
+            "cloud solutions engineer",
+            "software analyst",
+            "implementation engineer",
+            "integration engineer",
+            "support engineer",
+            "test automation engineer",
+            "QA engineer",
+            "SQA",
+            "software tester",
+            "SDET",
+            "site reliability engineer",
+            "SRE",
+            "software",
+            "engineering",
+            "engineer",
+            "computer",
+            "computer science",
+            "junior cloud engineer",
+            "junior ML engineer"
+        ]
+    },
+    "sites": [
+        {
+            "name": "jobteaser",
+            "baseUrl": "https://www.jobteaser.com",
+            "searchTemplate": "https://assets-cf.jobteaser.com/sitemaps/sitemap.xml",
+            "robotsTxt": "https://www.jobteaser.com/robots.txt",
+            "useRenderer": false,
+            "allowedToScrape": true,
+            "note": "JobTeaser’s robots.txt allows crawling of sitemaps and public job pages. Use the sitemap to discover jobs instead of blocked search endpoints.",
+            "selectors": {
+                "card": ".job-card",
+                "title": ".job-title",
+                "link": "a.job-link",
+                "company": ".company"
+            },
+            "policyReferences": {
+                "robotsTxt": "https://www.jobteaser.com/robots.txt",
+                "termsOfService": "https://www.jobteaser.com/en/legal"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/cdn-cgi/",
+                "*/apply_to_extern_url",
+                "/*/companies/job-offers/*?locale=*",
+                "/*/job-offers?locale=*&page=*&*",
+                "/*?page=*&*"
+                ],
+                "prohibitedActivities": [
+                "Scraping beyond allowed sitemap/job pages",
+                "Accessing personal applicant data",
+                "High-volume or commercial use without permission"
+                ]
+            },
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117 Safari/537.36",
+                "Referer": "https://www.jobteaser.com/"
+            },
+            "sitemapPattern": "job_ads_sitemap"
+        },
+        {
+            "name": "linkedin",
+            "baseUrl": "https://www.linkedin.com",
+            "allowedToScrape": false,
+            "note": "LinkedIn’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official APIs or licensed partners instead.",
+            "policyReferences": {
+                "termsOfService": "https://www.linkedin.com/legal/user-agreement",
+                "robotsTxt": "https://www.linkedin.com/robots.txt"
+            },
+            "alternatives": {
+                "apiDocs": "https://learn.microsoft.com/en-us/linkedin/",
+                "partnerProgram": "https://business.linkedin.com/talent-solutions",
+                "comment": "If you need job data, request access through LinkedIn's API or use official data partners. Public scraping (including /jobs/search) is prohibited."
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                    "/jobs",
+                    "/jobs/search",
+                    "/in",
+                    "/company",
+                    "/profile"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job or profile data without permission",
+                    "Bulk downloading or indexing of listings or user profiles",
+                    "Using data for machine learning / AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "indeed",
+            "baseUrl": "https://www.indeed.com",
+            "searchTemplate": "https://www.indeed.com/jobs?q={{keyword}}&l=Remote&start={{pageOffset}}",
+            "useRenderer": false,
+            "allowedToScrape": false,
+            "note": "Indeed’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official partnerships or APIs instead.",
+            "policyReferences": {
+                "termsOfService": "https://www.indeed.com/legal", 
+                "robotsTxt": "https://www.indeed.com/robots.txt"
+            },
+            "alternatives": {
+                "partnerApi": "Check if Indeed offers localized API or partnerships in your region",
+                "jobSyncProgram": "Indeed's synchronization or job posting partnership options if you are an ATS or employer"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/jobs", 
+                "/viewjob", 
+                "/cmp"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading / indexing of listings",
+                "Using data for machine learning / AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "glassdoor",
+            "baseUrl": "https://www.glassdoor.com",
+            "searchTemplate": "https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{keyword}}&locT=&locId=&locKeyword=&page={{page}}",
+            "useRenderer": true,
+            "allowedToScrape": false,
+            "note": "Glassdoor's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.",
+            "policyReferences": {
+                "termsOfService": "https://www.glassdoor.com/about/terms/",
+                "robotsTxt": "https://www.glassdoor.com/robots.txt"
+            },
+            "alternatives": {
+                "api": "Glassdoor provides an official API for partners. Visit https://www.glassdoor.com/developer/index.htm for more information.",
+                "partnerProgram": "Consider joining Glassdoor's partner program to access job data legally. Details can be found at https://www.glassdoor.com/partners/"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/job-listing/*",
+                "/Job/*",
+                "/search/*",
+                "/Reviews/*",
+                "/profile/*"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading or indexing of job listings",
+                "Using data for machine learning or AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "adzuna",
+            "baseUrl": "https://www.adzuna.de",
+            "searchTemplate": "https://www.adzuna.de/jobs/{some-path}?q={{keyword}}&page={{page}}",
+            "useRenderer": false,
+            "allowedToScrape": false,
+            "note": "Adzuna provides an API; scraping may violate their terms and conditions and robots.txt.",
+            "policyReferences": {
+                "termsOfService": "https://www.adzuna.de/terms-and-conditions.html",
+                "robotsTxt": "https://www.adzuna.de/robots.txt"
+            },
+            "alternatives": {
+                "api": "Adzuna offers an API for partners. Visit https://www.adzuna.de/api for more information.",
+                "partnerProgram": "Consider joining Adzuna's partner program to access job data legally. Details can be found at https://www.adzuna.de/partners/"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/jobs",
+                "/search",
+                "/job-listing/*",
+                "/job/*"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading or indexing of job listings",
+                "Using data for machine learning or AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "stepstone",
+            "baseUrl": "https://www.stepstone.de",
+            "searchTemplate": "https://www.stepstone.de/job-search?ke={{keyword}}&page={{page}}",
+            "useRenderer": false,
+            "allowedToScrape": false,
+            "note": "StepStone's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.",
+            "policyReferences": {
+                "termsOfService": "https://www.stepstone.de/ueber-stepstone/allgemeine-geschaeftsbedingungen-vom-27-april-2022/",
+                "robotsTxt": "https://www.stepstone.de/robots.txt"
+            },
+            "alternatives": {
+                "api": "StepStone provides an API for partners. Visit https://www.stepstone.de/partners for more information.",
+                "partnerProgram": "Consider joining StepStone's partner program to access job data legally. Details can be found at https://www.stepstone.de/partners"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/job-listing/*",
+                "/Job/*",
+                "/search/*",
+                "/Reviews/*",
+                "/profile/*"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading or indexing of job listings",
+                "Using data for machine learning or AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "greenhouse",
+            "baseUrl": "https://boards.greenhouse.io",
+            "searchTemplate": "https://boards.greenhouse.io/search?utf8=%E2%9C%93&query={{keyword}}&page={{page}}",
+            "useRenderer": false,
+            "allowedToScrape": false,
+            "note": "Greenhouse's robots.txt disallows crawling of many internal paths. Scraping may violate their terms of service. Use their Job Board API or partner access instead.",
+            "policyReferences": {
+                "termsOfService": "https://www.greenhouse.com/legal",
+                "robotsTxt": "https://support.greenhouse.io/robots.txt"
+            },
+            "alternatives": {
+                "api": "Greenhouse offers a Job Board API for partners. Visit https://developers.greenhouse.io/job-board.html for more information.",
+                "partnerProgram": "Consider joining Greenhouse's partner program to access job data legally. Details can be found at https://integrations.greenhouse.com/"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/search",
+                "/jobs",
+                "/job-listing/*",
+                "/job/*",
+                "/companies/*"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading or indexing of job listings",
+                "Using data for machine learning or AI model training without explicit license"
+                ]
+            }
+        },
+        {
+            "name": "join",
+            "baseUrl": "https://join.com",
+            "searchTemplate": "https://join.com/jobs?text={{keyword}}&location=Germany&page={{page}}",
+            "useRenderer": false,
+            "allowedToScrape": false,
+            "note": "JOIN's robots.txt disallows crawling of many internal paths. Scraping may violate their terms of service. Use their API or partner access instead.",
+            "policyReferences": {
+                "termsOfService": "https://join.com/terms-headhunter",
+                "robotsTxt": "https://join.com/robots.txt"
+            },
+            "alternatives": {
+                "api": "JOIN offers an API for partners. Visit https://join.com/partners for more information.",
+                "partnerProgram": "Consider joining JOIN's partner program to access job data legally. Details can be found at https://join.com/partners"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                "/jobs",
+                "/search",
+                "/job-listing/*",
+                "/job/*",
+                "/companies/*"
+                ],
+                "prohibitedActivities": [
+                "Using bots or scrapers to extract job listing data without permission",
+                "Bulk downloading or indexing of job listings",
+                "Using data for machine learning or AI model training without explicit license"
+                ]
+            }
+        }
+    ]
+}
