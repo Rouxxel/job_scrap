@@ -4,7 +4,7 @@
         "maxLinkExtractor":1,
         "batchSizeSitemapLinkLoop":25,
         "batchSizeJobLinkLoop":1,
-        "pageLanguage":"en",
+        "pageLanguage":"/en/",
         "linkEtiquetteFilter": [
             "/job",
             "/jobs",
