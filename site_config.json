@@ -88,6 +88,48 @@
             "sitemapPattern": "job_ads_sitemap"
         },
         {
+            "name": "make-it-in-germany",
+            "baseUrl": "https://www.make-it-in-germany.com",
+            "searchTemplate": "https://www.make-it-in-germany.com/sitemap.xml",
+            "robotsTxt": "https://www.make-it-in-germany.com/robots.txt",
+            "useRenderer": false,
+            "allowedToScrape": true,
+            "note": "Official German government portal for skilled workers. Use the sitemap to discover job listings safely.",
+            "selectors": {
+                "card": ".job-listing-card",
+                "title": ".job-listing-title",
+                "link": "a.job-listing-link",
+                "company": ".job-listing-company",
+                "location": ".job-listing-location"
+            },
+            "policyReferences": {
+                "robotsTxt": "https://www.make-it-in-germany.com/robots.txt",
+                "termsOfService": "https://www.make-it-in-germany.com/en/legal"
+            },
+            "restrictions": {
+                "disallowedPaths": [
+                    "/typo3/",
+                    "/uploads/pdfs/",
+                    "/*?id=*",
+                    "/*?eID=*",
+                    "/*tx_solr[q]*",
+                    "/*tx_solr[filter]*",
+                    "/*tx_solr[sort]*"
+                ],
+                "prohibitedActivities": [
+                    "Scraping beyond allowed sitemap/job pages",
+                    "Accessing non-public or personal applicant data",
+                    "High-volume or commercial use without explicit permission"
+                ]
+            },
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117 Safari/537.36",
+                "Referer": "https://www.make-it-in-germany.com/"
+            },
+            "sitemapPattern": "job-listings"
+        },
+
+        {
             "name": "linkedin",
             "baseUrl": "https://www.linkedin.com",
             "searchPathHint": "/jobs/search/",
@@ -266,36 +308,6 @@
                 "Using bots or scrapers to extract job listing data without permission",
                 "Bulk downloading or indexing of job listings",
                 "Using data for machine learning or AI model training without explicit license"
-                ]
-            }
-        },
-        {
-            "name": "make-it-in-germany",
-            "baseUrl": "https://www.make-it-in-germany.com",
-            "searchPathHint": "/working-in-germany/job-listings",
-            "searchTemplate": "https://www.make-it-in-germany.com/en/working-in-germany/job-listings?search={{keyword}}&page={{page}}",
-            "useRenderer": false,
-            "allowedToScrape": true,
-            "note": "Official German government portal for skilled workers. Use the job listings endpoint for job data.",
-            "policyReferences": {
-                "termsOfService": "https://www.make-it-in-germany.com/en/legal",
-                "robotsTxt": "https://www.make-it-in-germany.com/robots.txt"
-            },
-            "alternatives": {
-                "partnerApi": "Check if the portal offers an API or data feed for job listings",
-                "dataSource": "Uses data from the Federal Employment Agency (BA) and job exchanges"
-            },
-            "restrictions": {
-                "disallowedPaths": [
-                "/legal",
-                "/about-us",
-                "/working-in-germany/job", 
-                "/working-in-germany/"
-                ],
-                "prohibitedActivities": [
-                "Scraping beyond job listings page",
-                "Bulk downloading of non-job data",
-                "Using data for machine learning or commercial resale without permission"
                 ]
             }
         }
