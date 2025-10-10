@@ -112,14 +112,7 @@ This n8n workflow automates the entire job scraping pipeline:
 }
 ```
 5. Merge and normalize data from multiple sources if needed.  
-   - Ensure all job entries follow a consistent structure:  
-     ```json
-     {
-         "company": "Company Name",
-         "job_title": "Job Title",
-         "link": "Job URL"
-     }
-     ```
+   - Ensure all job entries follow a consistent structure.  
    - Handle cases where some sources may have different field names, e.g., `title` vs `job_title`.  
    - Deduplicate entries by URL to avoid repeats.  
 
