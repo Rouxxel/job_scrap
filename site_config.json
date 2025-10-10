@@ -91,7 +91,7 @@
         {
             "name": "make-it-in-germany",
             "baseUrl": "https://www.make-it-in-germany.com",
-            "searchTemplate": "https://www.make-it-in-germany.com/en/working-in-germany/job-listings/sitemap.xml?sitemap=pages&cHash=a80d541cc2df70fa5079c5d3b9e880b7",
+            "searchTemplate": "https://www.make-it-in-germany.com/en/working-in-germany/job-listings",
             "robotsTxt": "https://www.make-it-in-germany.com/robots.txt",
             "useRenderer": false,
             "allowedToScrape": true,
