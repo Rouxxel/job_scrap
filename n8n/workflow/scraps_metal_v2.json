@@ -1,0 +1,667 @@
+{
+  "name": "scraps_metal",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const filters = $('main_config').first().json.search_config.linkEtiquetteFilter;\nconst results = [];\n\nfor (const item of items) {\n  const response = item.json; // Google API response\n\n  if (response.items) {\n    for (const r of response.items) {\n      const textToSearch = [\n        r.link || \"\",\n        r.title || \"\",\n        r.snippet || \"\"\n      ].join(\" \").toLowerCase();\n\n      const matchedFilter = filters.find(f => textToSearch.includes(f.toLowerCase()));\n\n      if (matchedFilter) {\n        results.push({\n          json: {\n            website: item.json.websiteName || \"unknown\",\n            keyword: item.json.keyword || \"unknown\",\n            title: r.title,\n            url: r.link,\n            snippet: r.snippet,\n            matchedFilter: matchedFilter\n          }\n        });\n      }\n    }\n  }\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        1680
+      ],
+      "id": "5982aa7b-5217-41d8-b9de-ad524166eac0",
+      "name": "job_listing_extractor",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/customsearch/v1?key={{APIKEY}}&cx={{CSEID}}&q={{encodeURIComponent($json.keyword + ' job OR jobs OR career OR hiring site:' + $json.baseUrl.replace(/^https?:\\/\\//, '') + ($json.searchPathHint || ''))}}&num=10\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        1840
+      ],
+      "id": "984f1997-589e-479b-aa0a-ee72a7acf646",
+      "name": "HTTP Request",
+      "notesInFlow": true,
+      "disabled": true,
+      "notes": "Requires API key from google cloud and an ID from a CSE"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -944,
+        1776
+      ],
+      "id": "ea35a285-c8ea-46b3-9ade-40e33255c4d3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIG ---\nconst processFirstOnly = false; // true = only first site, false = all\n\n// keywords and searches (keeping your working references)\nconst keywords = $('sites_config').first().json.search_config.search_keywords;\nconst searches = $input.first().json.sites;\n\n// --- SAFETY CHECK ---\nif (!searches || searches.length === 0) {\n    return [{ json: { error: \"No 'searches' array found in input.\" } }];\n}\n\nconst output = [];\n\n// Optionally only process the first site\nconst targetSites = processFirstOnly ? [searches[0]] : searches;\n\nfor (const site of targetSites) {\n    if (!site || !site.baseUrl || !site.name) continue;\n\n    const baseDomain = site.baseUrl.replace(/^https?:\\/\\//, '');\n    const searchPath = site.searchPathHint || '';\n\n    for (const kw of keywords) {\n        const query = `${kw} site:${baseDomain}${searchPath}`;\n        const encodedQuery = encodeURIComponent(query);\n\n        output.push({\n            json: {\n                websiteName: site.name,\n                baseUrl: site.baseUrl,\n                keyword: kw,\n                query,\n                encodedQuery,\n                // Access the nested fields correctly\n                disallowedPaths: (site.restrictions && site.restrictions.disallowedPaths) || [],\n                apiDocs: (site.alternatives && site.alternatives.apiDocs) || null\n            }\n        });\n    }\n}\n\n// --- If no sites are processed ---\nif (output.length === 0) {\n    return [{\n        json: { message: \"No sites processed — check input or configuration.\" }\n    }];\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        1776
+      ],
+      "id": "0da510a5-540d-4085-b6b2-32bbbd4a9929",
+      "name": "pair_web_keyword",
+      "notesInFlow": true,
+      "notes": "const processFirstOnly = true; // set to false if you want ALL websites"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1968,
+        1552
+      ],
+      "id": "5a83d6df-b13a-4c7b-8f04-bf48391fd3d4",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n    \"search_config\":{\n        \"maxPagesPerQuery\": 3,\n        \"maxLinkExtractor\":1,\n        \"batchSizeLoop\":1,\n        \"pageLanguage\":[\n            \"/en/\"\n        ],\n        \"linkEtiquetteFilter\": [\n            \"/job\",\n            \"/jobs\",\n            \"/job-detail\",\n            \"/job-listings\",\n            \"/jobdetails\",\n            \"/job-openings\",\n            \"/job-opening\",\n            \"/job-description\",\n            \"/jobdesc\",\n            \"/jobposting\",\n            \"/job-posting\",\n            \"/jobad\",\n            \"/job-ad\",\n            \"/offer\",\n            \"/offers\",\n            \"/job-offer\",\n            \"/job-offers\",\n            \"/careers\",\n            \"/career\",\n            \"/career-opportunities\",\n            \"/employment\",\n            \"/opportunity\",\n            \"/opportunities\",\n            \"/positions\",\n            \"/position\",\n            \"/vacancies\",\n            \"/vacancy\",\n            \"/viewjob\",\n            \"/jobs-guest\",\n            \"/recruitment\",\n            \"/hiring\",\n            \"/apply\",\n            \"/application\"\n        ],\n        \"search_keywords\": [\n            \"software\",\n            \"developer\",\n            \"data\",\n            \"ai\",\n            \"engineer\",\n            \"engineering\",\n            \"analyst\",\n            \"junior\",\n            \"graduate\",\n            \"consultant\",\n            \"associate\",\n            \"trainee\",\n            \"advisory\",\n            \"advisor\",\n            \"global\"\n        ]\n    },\n    \"sites\": [\n        {\n            \"name\": \"jobteaser\",\n            \"baseUrl\": \"https://www.jobteaser.com\",\n            \"searchTemplate\": \"https://assets-cf.jobteaser.com/sitemaps/sitemap.xml\",\n            \"robotsTxt\": \"https://www.jobteaser.com/robots.txt\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": true,\n            \"note\": \"JobTeaser’s robots.txt allows crawling of sitemaps and public job pages. Use the sitemap to discover jobs instead of blocked search endpoints.\",\n            \"selectors\": {\n                \"card\": \".job-card\",\n                \"title\": \".job-title\",\n                \"link\": \"a.job-link\",\n                \"company\": \".company\"\n            },\n            \"policyReferences\": {\n                \"robotsTxt\": \"https://www.jobteaser.com/robots.txt\",\n                \"termsOfService\": \"https://www.jobteaser.com/en/legal\"\n            },\n            \"restrictions\": {\n                \"disallowedPaths\": [\n                \"/cdn-cgi/\",\n                \"*/apply_to_extern_url\",\n                \"/*/companies/job-offers/*?locale=*\",\n                \"/*/job-offers?locale=*&page=*&*\",\n                \"/*?page=*&*\"\n                ],\n                \"prohibitedActivities\": [\n                \"Scraping beyond allowed sitemap/job pages\",\n                \"Accessing personal applicant data\",\n                \"High-volume or commercial use without permission\"\n                ]\n            },\n            \"headers\": {\n                \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117 Safari/537.36\",\n                \"Referer\": \"https://www.jobteaser.com/\"\n            },\n            \"sitemapPattern\": \"job_ads_sitemap\"\n        },\n        {\n            \"name\": \"make-it-in-germany\",\n            \"baseUrl\": \"https://www.make-it-in-germany.com\",\n            \"searchTemplate\": \"https://www.make-it-in-germany.com/en/working-in-germany/job-listings\",\n            \"robotsTxt\": \"https://www.make-it-in-germany.com/robots.txt\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": true,\n            \"note\": \"Official German government portal for skilled workers. Use the sitemap to discover job listings safely.\",\n            \"selectors\": {\n                \"card\": \".job-listing-card\",\n                \"title\": \".job-listing-title\",\n                \"link\": \"a.job-listing-link\",\n                \"company\": \".job-listing-company\",\n                \"location\": \".job-listing-location\"\n            },\n            \"policyReferences\": {\n                \"robotsTxt\": \"https://www.make-it-in-germany.com/robots.txt\",\n                \"termsOfService\": \"https://www.make-it-in-germany.com/en/legal\"\n            },\n            \"restrictions\": {\n                \"disallowedPaths\": [\n                    \"/typo3/\",\n                    \"/uploads/pdfs/\",\n                    \"/*?id=*\",\n                    \"/*?eID=*\",\n                    \"/*tx_solr[q]*\",\n                    \"/*tx_solr[filter]*\",\n                    \"/*tx_solr[sort]*\"\n                ],\n                \"prohibitedActivities\": [\n                    \"Scraping beyond allowed sitemap/job pages\",\n                    \"Accessing non-public or personal applicant data\",\n                    \"High-volume or commercial use without explicit permission\"\n                ]\n            },\n            \"headers\": {\n                \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117 Safari/537.36\",\n                \"Referer\": \"https://www.make-it-in-germany.com/\"\n            },\n            \"sitemapPattern\": \"job-listings\"\n        },\n\n        {\n            \"name\": \"linkedin\",\n            \"baseUrl\": \"https://www.linkedin.com\",\n            \"searchPathHint\": \"/jobs/search/\",\n            \"allowedToScrape\": false,\n            \"note\": \"LinkedIn’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official APIs or licensed partners instead.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.linkedin.com/legal/user-agreement\",\n            \"robotsTxt\": \"https://www.linkedin.com/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://learn.microsoft.com/en-us/linkedin/\",\n            \"partnerProgram\": \"https://business.linkedin.com/talent-solutions\",\n            \"comment\": \"If you need job data, request access through LinkedIn's API or use official data partners. Public scraping (including /jobs/search) is prohibited.\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/jobs\",\n                \"/jobs/search\",\n                \"/in\",\n                \"/company\",\n                \"/profile\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job or profile data without permission\",\n                \"Bulk downloading or indexing of listings or user profiles\",\n                \"Using data for machine learning / AI model training without explicit license\"\n            ]\n            }\n        },\n        {\n            \"name\": \"indeed\",\n            \"baseUrl\": \"https://www.indeed.com\",\n            \"searchPathHint\": \"/jobs\",\n            \"searchTemplate\": \"https://www.indeed.com/jobs?q={{keyword}}&l=Remote&start={{pageOffset}}\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": false,\n            \"note\": \"Indeed’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official partnerships or APIs instead.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.indeed.com/legal\", \n            \"robotsTxt\": \"https://www.indeed.com/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://docs.indeed.com/job-sync-api/job-sync-api-guide\",\n            \"partnerApi\": \"Check if Indeed offers localized API or partnerships in your region\",\n            \"jobSyncProgram\": \"Indeed's synchronization or job posting partnership options if you are an ATS or employer\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/jobs\", \n                \"/viewjob\", \n                \"/cmp\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job listing data without permission\",\n                \"Bulk downloading / indexing of listings\",\n                \"Using data for machine learning / AI model training without explicit license\"\n            ]\n            }\n        },\n        {\n            \"name\": \"glassdoor\",\n            \"baseUrl\": \"https://www.glassdoor.com\",\n            \"searchPathHint\": \"/Job\",\n            \"searchTemplate\": \"https://www.glassdoor.com/Job/jobs.htm?sc.keyword={{keyword}}&locT=&locId=&locKeyword=&page={{page}}\",\n            \"useRenderer\": true,\n            \"allowedToScrape\": false,\n            \"note\": \"Glassdoor's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.glassdoor.com/about/terms/\",\n            \"robotsTxt\": \"https://www.glassdoor.com/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://www.glassdoor.com/developer/index.htm\",\n            \"api\": \"Glassdoor provides an official API for partners. Visit https://www.glassdoor.com/developer/index.htm for more information.\",\n            \"partnerProgram\": \"Consider joining Glassdoor's partner program to access job data legally. Details can be found at https://www.glassdoor.com/partners/\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/job-listing/*\",\n                \"/Job/*\",\n                \"/search/*\",\n                \"/Reviews/*\",\n                \"/profile/*\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job listing data without permission\",\n                \"Bulk downloading or indexing of job listings\",\n                \"Using data for machine learning or AI model training without explicit license\"\n            ]\n            }\n        },\n        {\n            \"name\": \"adzuna\",\n            \"baseUrl\": \"https://www.adzuna.de\",\n            \"searchPathHint\": \"/search\",\n            \"searchTemplate\": \"https://www.adzuna.de/jobs/{some-path}?q={{keyword}}&page={{page}}\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": false,\n            \"note\": \"Adzuna provides an API; scraping may violate their terms and conditions and robots.txt.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.adzuna.de/terms-and-conditions.html\",\n            \"robotsTxt\": \"https://www.adzuna.de/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://www.adzuna.de/api\",\n            \"api\": \"Adzuna offers an API for partners. Visit https://www.adzuna.de/api for more information.\",\n            \"partnerProgram\": \"Consider joining Adzuna's partner program to access job data legally. Details can be found at https://www.adzuna.de/partners/\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/jobs\",\n                \"/search\",\n                \"/job-listing/*\",\n                \"/job/*\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job listing data without permission\",\n                \"Bulk downloading or indexing of job listings\",\n                \"Using data for machine learning / AI model training without explicit license\"\n            ]\n            }\n        },\n        {\n            \"name\": \"stepstone\",\n            \"baseUrl\": \"https://www.stepstone.de\",\n            \"searchPathHint\": \"/jobs\",\n            \"searchTemplate\": \"https://www.stepstone.de/job-search?ke={{keyword}}&page={{page}}\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": false,\n            \"note\": \"StepStone's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.stepstone.de/ueber-stepstone/allgemeine-geschaeftsbedingungen-vom-27-april-2022/\",\n            \"robotsTxt\": \"https://www.stepstone.de/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://www.stepstone.de/partners\",\n            \"api\": \"StepStone provides an API for partners. Visit https://www.stepstone.de/partners for more information.\",\n            \"partnerProgram\": \"Consider joining StepStone's partner program to access job data legally. Details can be found at https://www.stepstone.de/partners\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/job-listing/*\",\n                \"/Job/*\",\n                \"/search/*\",\n                \"/Reviews/*\",\n                \"/profile/*\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job listing data without permission\",\n                \"Bulk downloading or indexing of job listings\",\n                \"Using data for machine learning or AI model training without explicit license\"\n            ]\n            }\n        },\n        {\n            \"name\": \"greenhouse\",\n            \"baseUrl\": \"https://boards.greenhouse.io\",\n            \"searchPathHint\": \"/jobs\",\n            \"searchTemplate\": \"https://boards.greenhouse.io/search?utf8=%E2%9C%93&query={{keyword}}&page={{page}}\",\n            \"useRenderer\": false,\n            \"allowedToScrape\": false,\n            \"note\": \"Greenhouse's robots.txt disallows crawling of many internal paths. Scraping may violate their terms of service. Use their Job Board API or partner access instead.\",\n            \"policyReferences\": {\n            \"termsOfService\": \"https://www.greenhouse.com/legal\",\n            \"robotsTxt\": \"https://support.greenhouse.io/robots.txt\"\n            },\n            \"alternatives\": {\n            \"apiDocs\": \"https://developers.greenhouse.io/job-board.html\",\n            \"api\": \"Greenhouse offers a Job Board API for partners. Visit https://developers.greenhouse.io/job-board.html for more information.\",\n            \"partnerProgram\": \"Consider joining Greenhouse's partner program to access job data legally. Details can be found at https://integrations.greenhouse.com/\"\n            },\n            \"restrictions\": {\n            \"disallowedPaths\": [\n                \"/search\",\n                \"/jobs\",\n                \"/job-listing/*\",\n                \"/job/*\",\n                \"/companies/*\"\n            ],\n            \"prohibitedActivities\": [\n                \"Using bots or scrapers to extract job listing data without permission\",\n                \"Bulk downloading or indexing of job listings\",\n                \"Using data for machine learning or AI model training without explicit license\"\n            ]\n            }\n        }\n    ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1776,
+        1552
+      ],
+      "id": "137e238d-b644-4303-90d5-b17eaa7a0fd4",
+      "name": "sites_config",
+      "retryOnFail": true,
+      "waitBetweenTries": 500,
+      "notesInFlow": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the JSON from the previous node\nconst sites = $input.first().json.sites;\n\n// Separate into two arrays\nconst allowed = [];\nconst notAllowed = [];\n\nsites.forEach(site => {\n  if (site.allowedToScrape) {\n    allowed.push(site);\n  } else {\n    notAllowed.push(site);\n  }\n});\n\n// Return two outputs with boolean field\nreturn [\n  { json: { allowedToScrape: true, sites: allowed } },\n  { json: { allowedToScrape: false, sites: notAllowed } }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        1552
+      ],
+      "id": "ca990e41-76c2-4029-9cb6-8f7d13d8fa40",
+      "name": "seggregated",
+      "retryOnFail": true,
+      "waitBetweenTries": 100,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ee0b7f9f-bd88-4c04-ab07-56ed74d669d8",
+              "leftValue": "={{ $json.allowedToScrape }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1424,
+        1552
+      ],
+      "id": "a4238b51-c3bf-4b3c-a580-6fdd0ac7fae4",
+      "name": "If allowed to",
+      "retryOnFail": true,
+      "waitBetweenTries": 500,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input JSON\nconst input = items[0].json;\n\n// Get allowed sites\nconst allowedSites = input.sites || [];\n\n// Get from sites_config node\nconst keywords = $('sites_config').first().json.search_config.search_keywords || [];\nconst filters= $('sites_config').first().json.search_config.linkEtiquetteFilter || [];\nconst language = $('sites_config').first().json.search_config.pageLanguage || [];\nconst batch_size = $('sites_config').first().json.search_config.batchSizeJobLinkLoop || 1;\n\nconst results = [];\n\nfor (const site of allowedSites) {\n    let urls = [];\n\n    if (site.searchTemplate && site.searchTemplate.includes('sitemap')) {\n        // Sitemap-based site: only one URL needed\n        urls.push(site.searchTemplate);\n    } else {\n        // Paginated searchTemplate: build URLs per page\n        const maxPages = input.search_config?.maxPagesPerQuery || 1;\n        for (let page = 1; page <= maxPages; page++) {\n            const url = site.searchTemplate\n                ? site.searchTemplate\n                    .replace('{{keyword}}', '') // leave keyword blank\n                    .replace('{{page}}', page)\n                    .replace('{{pageOffset}}', (page - 1) * 10)\n                : site.baseUrl;\n            urls.push(url);\n        }\n    }\n\n    results.push({\n        siteName: site.name,\n        urls: urls,\n        useRenderer: !!site.useRenderer,\n        headers: site.headers\n    });\n}\n\n// Return final structure\nreturn [\n    {\n        json: {\n            caveats:{\n              batch_size: batch_size,\n              filters: filters,\n              language: language,\n              keywords: keywords,\n            },\n            results: results\n        }\n    }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        1424
+      ],
+      "id": "5a12734e-b184-4e37-a214-a99a47b52b4f",
+      "name": "search_maker",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items[0].json;\nconst out = [];\n\nfor (const site of data.results) {\n  for (const url of site.urls) {\n    out.push({\n      json: {\n        siteName: site.siteName,\n        url: url,\n        headers: site.headers,\n        useRenderer: site.useRenderer\n      }\n    });\n  }\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        1424
+      ],
+      "id": "85fc42d4-bf4d-42ce-9670-c880cb713154",
+      "name": "splitter",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -624,
+        1440
+      ],
+      "id": "48f2fe53-bf32-4c79-8f0d-5d2064025a72",
+      "name": "Request sitemap",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a7e3495-5727-4bf3-bd54-334bb405ffeb",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "<urlset",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "626eae63-0977-4a7a-8c4c-69e035f71845",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "<sitemapindex",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "f1667e2a-6047-4a89-8ea4-ef9d441fa24a",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "<\\?xml",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        1296
+      ],
+      "id": "5d3dc015-904f-4975-a818-fc1fcedf4d25",
+      "name": "If xml or no",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -816,
+        1424
+      ],
+      "id": "09b2a688-292f-4821-9cb6-f7c4a87bcb1b",
+      "name": "Loop",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        1184
+      ],
+      "id": "27396ac9-f215-4620-bca2-5bc88fdd6e8e",
+      "name": "XML to JSON1",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "waitBetweenTries": 100
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input (assuming it's the JSON parsed from sitemap XML)\nconst sitemapData = items[0].json;\n\n// Navigate safely to the array of sitemaps\nconst sitemaps = sitemapData.sitemapindex?.sitemap || [];\n\n// Filter only job ad related sitemaps\nconst jobSitemaps = sitemaps.filter(entry => entry.loc.includes('job_ads_sitemap'));\n\n// Map each to a separate output item\nreturn jobSitemaps.map(entry => ({\n  json: {\n    url: entry.loc,\n    lastmod: entry.lastmod || null\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        1184
+      ],
+      "id": "30e166e9-bdc9-4661-8464-ff412b8327fb",
+      "name": "job_sitemap_extractor1",
+      "retryOnFail": true,
+      "waitBetweenTries": 100,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        1184
+      ],
+      "id": "b40f3c88-5fcc-46cf-95bb-f140aeea3c09",
+      "name": "Loop1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        1200
+      ],
+      "id": "2dc5955f-fc51-4559-891f-3c7adf0fbc1f",
+      "name": "HTTP Request1",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "executeOnce": true,
+      "notes": "FOR NOW EXECUTES ONCE ONLY"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node parses both XML sitemaps and normal HTML pages safely.\n// If <loc> tags are found, it extracts them (XML sitemap mode).\n// Otherwise, it falls back to extracting <a href=\"...\"> links (HTML mode).\n\nconst xmlData = items[0].json.data || '';\nconst results = [];\nconst maxLinks = 500; // Limit to prevent memory overload\n\nlet matches;\nlet counter = 0;\n\n// Regex patterns\nconst regexLoc = /<loc>(.*?)<\\/loc>/gi; // XML sitemap <loc>...</loc>\nconst regexHref = /<a\\s+(?:[^>]*?\\s+)?href=\"([^\"]*)\"/gi; // HTML <a href=\"...\">\n\n// Try to detect whether this looks like a sitemap\nconst looksLikeSitemap =\n  xmlData.includes('<urlset') ||\n  xmlData.includes('<sitemapindex') ||\n  xmlData.match(regexLoc);\n\n// Use appropriate regex depending on content\nconst activeRegex = looksLikeSitemap ? regexLoc : regexHref;\n\nwhile ((matches = activeRegex.exec(xmlData)) !== null) {\n  // Extract link (group 1 in regex)\n  const link = matches[1].trim();\n\n  // Skip empty or junk links\n  if (!link || link.startsWith('#') || link.startsWith('javascript:')) continue;\n\n  results.push(link);\n  counter++;\n\n  if (counter >= maxLinks) break; // stop early if too many\n}\n\n// Return as a single JSON array\nreturn [\n  {\n    json: {\n      links: results\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        1040
+      ],
+      "id": "98dbe4af-8909-4c26-a5a3-65a49cccd8fb",
+      "name": "individual_link_extractor"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Get filters from main_config ---\nconst keywords = $('sites_config').first().json.search_config.linkEtiquetteFilter || [];\nconst langFilter = $('sites_config').first().json.search_config.pageLanguage || '';\n\n// --- Get input links array ---\nconst input = items[0].json;\nconst allLinks = input.links || [];\n\nconst filteredLinks = [];\n\nfor (const rawLink of allLinks) {\n    const link = rawLink.toLowerCase();\n    let passLang = false;\n    let passkeyword = false;\n\n    for(const lang of langFilter){\n       if (link.includes(lang)){\n        passLang= true;\n        break;\n      } \n    }\n\n    for (const kword of keywords){\n      if(link.includes(kword.toLowerCase())){\n        passkeyword= true;\n        break;\n      }\n    }\n\n    if (passLang && passkeyword) {\n        filteredLinks.push(rawLink);\n    }\n}\n\n// --- Return as a single object with filtered results ---\nreturn [\n  {\n    json: {\n      filteredLinks: filteredLinks\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        1040
+      ],
+      "id": "8945a5a0-8cd7-41a7-8020-4fcb18b76c19",
+      "name": "filterer"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process each input item\nreturn items.map(item => {\n  const links = item.filteredLinks || item.json?.filteredLinks || [];\n  \n  const results = links.map(url => {\n    // Match any link ending with /job-offers/<uuid>-<slug>\n    const match = url.match(/\\/job-offers\\/[0-9a-fA-F-]+-(.+)/);\n    if (!match) {\n      return { link: url, company: null, job_title: null };\n    }\n\n    const remaining = match[1];\n    const parts = remaining.split('-');\n\n    // Heuristic: guess company name (first 1–3 words before typical job keywords)\n    let company = parts[0];\n    let i;\n    for (i = 1; i < Math.min(3, parts.length); i++) {\n      if (\n        !$('sites_config').first().json.search_config.search_keywords.includes(parts[i].toLowerCase())\n      ) {\n        company += ' ' + parts[i];\n      } else {\n        break;\n      }\n    }\n\n    // Job title = everything after company-related words\n    const job_title = parts.slice(i).join(' ').replace(/-/g, ' ');\n\n    // Clean formatting\n    const format = text =>\n      text\n        ? text.charAt(0).toUpperCase() + text.slice(1)\n        : null;\n\n    return {\n      link: url,\n      company: format(company),\n      job_title: format(job_title)\n    };\n  });\n\n  // Return structured array\n  return { json: { jobs: results } };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1040
+      ],
+      "id": "0940d659-afdb-4255-a18e-11a4993b3e2e",
+      "name": "organizer"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "jobLink",
+              "cssSelector": "li.list__item h3 a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            },
+            {
+              "key": "jobTitle",
+              "cssSelector": "li.list__item h3 a",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        1440
+      ],
+      "id": "631c9d9c-2d9b-4fcb-92f5-90f7d4700cf2",
+      "name": "HTML handler",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseURL = $('main_config').first().json.sites[1].baseUrl;\nlet results = [];\n\nitems.forEach(item => {\n  // Ensure jobLink is an array\n  let links = item.json.jobLink;\n  if (!Array.isArray(links)) links = [links];\n\n  // Ensure jobTitle is an array (repeat first title if only one)\n  let titles = item.json.jobTitle;\n  if (!Array.isArray(titles)) titles = [titles];\n\n  links.forEach((link, index) => {\n    link = (link || '').trim();\n    const absoluteLink = link.startsWith('http') ? link : baseURL + link;\n\n    // Pick corresponding title if exists, else empty\n    const job_title = (titles[index] || titles[0] || '').trim();\n\n    if (absoluteLink) results.push({ json: { job_title, link: absoluteLink } });\n  });\n});\n\n// Deduplicate by link\nconst uniqueResults = [...new Map(results.map(r => [r.json.link, r.json])).values()];\n\nreturn uniqueResults.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        1440
+      ],
+      "id": "79ee3480-ce12-41ee-9bd3-6c1650ef0cac",
+      "name": "normalizator",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "job_listing_extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pair_web_keyword": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "sites_config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sites_config": {
+      "main": [
+        [
+          {
+            "node": "seggregated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "seggregated": {
+      "main": [
+        [
+          {
+            "node": "If allowed to",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If allowed to": {
+      "main": [
+        [
+          {
+            "node": "search_maker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "pair_web_keyword",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_maker": {
+      "main": [
+        [
+          {
+            "node": "splitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "splitter": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request sitemap": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "If xml or no",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Request sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If xml or no": {
+      "main": [
+        [
+          {
+            "node": "XML to JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTML handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML to JSON1": {
+      "main": [
+        [
+          {
+            "node": "job_sitemap_extractor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "job_sitemap_extractor1": {
+      "main": [
+        [
+          {
+            "node": "Loop1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop1": {
+      "main": [
+        [
+          {
+            "node": "individual_link_extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "individual_link_extractor": {
+      "main": [
+        [
+          {
+            "node": "filterer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filterer": {
+      "main": [
+        [
+          {
+            "node": "organizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML handler": {
+      "main": [
+        [
+          {
+            "node": "normalizator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "da1670a3-3930-4cbd-baf5-05eedd488c11",
+  "meta": {
+    "instanceId": "7689b2d292c0781d20ceefaa84bdcd9885638f03916f0bd47506d5dc7d5acfe2"
+  },
+  "id": "qf8BEQ5VmHLMSNcr",
+  "tags": []
+}
