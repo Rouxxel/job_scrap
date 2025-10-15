@@ -1,69 +1,148 @@
-# Job Scraper
+# n8n Job Scraper & Aggregator
 
-This project contains configuration settings for scraping job listings from multiple websites while respecting their policies and robots.txt rules. The configuration is designed to work with automated scraping tools while remaining compliant with site restrictions.  
+An intelligent job scraping and aggregation system built with n8n that collects software engineering positions from multiple sources while respecting website policies and terms of service. The system combines direct scraping for compliant sites with semantic search for restricted platforms.
 
-In the future, this project may include a **frontend interface** to visualize, filter, and manage job listings more easily.
+**🎯 Specialized for Software Engineering Roles**: Backend, Frontend, Fullstack, DevOps, AI/ML, Embedded Systems, and more.
 
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)  
-2. [Search Configuration](#search-configuration)  
-3. [Sites Configuration](#sites-configuration)  
-4. [Restrictions and Compliance](#restrictions-and-compliance)  
-5. [Workflow Overview](#workflow-Overview)  
-6. [Usage](#usage)  
-7. [Notes](#notes)  
-8. [Future Improvements](#future-improvements)  
+1. [Project Overview](#project-overview)  
+2. [Current Status](#current-status)
+3. [Architecture](#architecture)
+4. [Search Configuration](#search-configuration)  
+5. [Sites Configuration](#sites-configuration)  
+6. [Data Pipeline](#data-pipeline)
+7. [Google Sheets Integration](#google-sheets-integration)
+8. [Compliance & Ethics](#compliance--ethics)
+9. [Setup & Usage](#setup--usage)  
+10. [Known Issues](#known-issues)
+11. [Future Roadmap](#future-roadmap)  
 
 ---
 
-## Overview
+## Project Overview
 
-This configuration enables scraping of job listings from multiple sources such as JobTeaser, Make It in Germany, LinkedIn, Indeed, Glassdoor, Adzuna, StepStone, and Greenhouse. It includes:
+This n8n-powered automation system intelligently aggregates software engineering job listings from multiple sources using a hybrid approach:
 
-- Sitemap or search templates for job discovery  
-- CSS selectors for extracting job cards, titles, links, and companies  
-- Filters for allowed URLs and job types  
-- Compliance rules with terms of service and robots.txt  
+- **Direct Scraping**: For sites that explicitly allow it (JobTeaser)
+- **Semantic Search**: For restricted sites using Google Custom Search Engine
+- **Smart Filtering**: Advanced keyword matching and ban filters for relevant positions
+- **Duplicate Prevention**: Intelligent deduplication based on job URLs
+- **Google Sheets Export**: Automated data export with duplicate checking
 
-The configuration is modular, allowing you to easily add new job sources or modify scraping rules.
+### Key Features
+
+- 🔍 **50+ Technical Keywords**: Targets specific roles from "backend developer" to "machine learning engineer"
+- 🚫 **Comprehensive Ban Filter**: Excludes internships, non-technical roles, and business positions  
+- 📊 **Google Sheets Integration**: Automatic export with duplicate prevention
+- ⚖️ **Ethical Compliance**: Respects robots.txt and terms of service
+- 🔄 **Automated Workflow**: Scheduled execution with error handling
+
+---
+
+## Current Status
+
+### ✅ Working Sources
+- **JobTeaser**: ✅ Fully functional - Direct sitemap scraping with reliable job link extraction
+- **GitHub Jobs**: ✅ API-based integration (free JSON endpoint)
+- **RemoteOK**: ✅ API-based integration for remote positions
+
+### ⚠️ Limited/Experimental Sources  
+- **Make It in Germany**: ⚠️ **Policy changes detected** - May require updates to scraping approach
+- **Google CSE Integration**: ⚠️ Limited by API quotas (100 calls/day free tier)
+
+### 🚫 Restricted Sources (Semantic Search Planned)
+- **LinkedIn**: Requires semantic search implementation
+- **Indeed**: Requires semantic search implementation  
+- **Glassdoor**: Requires semantic search implementation
+- **StepStone**: Requires semantic search implementation
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   n8n Workflow │────│  Site Configs    │────│  Google Sheets  │
+│                 │    │                  │    │                 │
+│ ┌─────────────┐ │    │ ┌──────────────┐ │    │ ┌─────────────┐ │
+│ │ Schedulers  │ │    │ │ Scrape Rules │ │    │ │ Dedupe Logic│ │
+│ │ HTTP Nodes  │ │────│ │ Ban Filters  │ │────│ │ Export Data │ │
+│ │ Processors  │ │    │ │ Keywords     │ │    │ │ Track Changes│ │
+│ └─────────────┘ │    │ └──────────────┘ │    │ └─────────────┘ │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Project Structure
+```
+├── n8n/
+│   ├── workflow/
+│   │   └── scraps_metal_v2.json     # Main n8n workflow
+│   └── configuration/
+│       └── site_config.json         # Site configurations & filters
+├── scripts/                         # Utility scripts (future)
+├── frontend/                        # Frontend interface (planned)
+└── README.md                        # This file
+```
 
 ---
 
 ## Search Configuration
 
-The `search_config` section defines general scraping parameters:
+### Technical Keywords (50+ Specialized Terms)
+```json
+"search_keywords": [
+  "software engineer", "backend developer", "frontend developer",
+  "fullstack developer", "python developer", "java developer",
+  "devops engineer", "machine learning engineer", "ai engineer",
+  "embedded systems engineer", "cloud engineer", "security engineer",
+  // ... and 40+ more specific technical roles
+]
+```
 
-- **maxPagesPerQuery**: Maximum number of pages to scrape per search query (default: 3)  
-- **maxLinkExtractor**: Maximum links to extract per page (default: 1)  
-- **batchSizeSitemapLinkLoop**: Number of sitemap links processed per batch (default: 25)  
-- **batchSizeJobLinkLoop**: Number of job links processed per batch (default: 1)  
-- **pageLanguage**: Filter pages by language (default: `/en/`)  
-- **linkEtiquetteFilter**: Allowed URL patterns for job links  
-- **search_keywords**: Keywords for filtering relevant jobs (e.g., `software`, `developer`, `junior`, `ai`, `data`, `engineer`)  
+### Ban Filter (Comprehensive Exclusions)
+```json
+"ban_filter": [
+  "intern", "internship", "student", "trainee",
+  "sales", "marketing", "business analyst", "project manager",
+  "hr", "human resources", "customer service", "administrative",
+  // ... and 40+ more non-technical roles
+]
+```
+
+### Processing Parameters
+- **maxPagesPerQuery**: 3 pages per search query
+- **batchSizeLoop**: 1 item per batch for controlled processing  
+- **pageLanguage**: English pages only (`/en/`)
+- **linkEtiquetteFilter**: 30+ job URL patterns for accurate detection
 
 ---
 
 ## Sites Configuration
 
-Each site is configured with the following fields:
+### Configuration Schema
+Each site includes:
+- **Compliance Status**: `allowedToScrape` boolean flag
+- **Access Method**: Sitemap, API, or semantic search approach
+- **Headers & Authentication**: Required request headers
+- **Restrictions**: Disallowed paths and prohibited activities
+- **Selectors**: CSS selectors for data extraction (when applicable)
+- **Alternative Access**: API documentation and partner program links
 
-- **name**: Site identifier  
-- **baseUrl**: Main website URL  
-- **searchTemplate**: Template or sitemap for finding job listings  
-- **robotsTxt**: URL for robots.txt compliance  
-- **useRenderer**: Whether to use a renderer for dynamic pages  
-- **allowedToScrape**: Indicates if scraping is permitted  
-- **note**: Additional information about scraping rules  
-- **selectors**: CSS selectors for job cards, titles, links, companies, and locations  
-- **policyReferences**: Links to terms of service and robots.txt  
-- **restrictions**: Disallowed paths and prohibited activities  
-- **headers**: HTTP headers to use during requests  
-- **sitemapPattern**: Pattern to identify sitemap entries (optional)  
+### Site Categories
 
-Examples include JobTeaser and Make It in Germany, which allow scraping via their sitemap, and sites like LinkedIn and Glassdoor, which explicitly forbid scraping.
+**🟢 Direct Scraping Allowed**
+- JobTeaser: Sitemap-based extraction via `job_ads_sitemap`
+- GitHub Jobs: JSON API endpoint
+- RemoteOK: JSON API for remote positions
+
+**🟡 Limited/Changing Policies**  
+- Make It in Germany: Government portal with evolving scraping policies
+
+**🔴 Semantic Search Required**
+- LinkedIn, Indeed, Glassdoor: Require Google CSE or similar approaches
 
 ---
 
@@ -145,3 +224,203 @@ This n8n workflow automates the entire job scraping pipeline:
 
 ---
 
+
+## Data Pipeline
+
+### n8n Workflow Components
+
+**1. Configuration & Initialization**
+- `sites_config`: Loads site configurations and filtering rules
+- `segregated`: Separates allowed vs restricted sites
+- `search_maker`: Generates search URLs and parameters
+
+**2. Data Extraction**
+- `Request sitemap`: Fetches XML sitemaps with enhanced error handling
+- `XML to JSON`: Converts sitemap data to processable format
+- `job_sitemap_extractor`: Extracts job-specific sitemap URLs
+- `link_extractor`: Parses job links from HTML/XML content
+
+**3. Processing & Filtering**
+- `organizer`: Normalizes and structures job data
+- `filter_duplicates`: Removes duplicate entries based on job URLs
+- `keyword_filter`: Applies technical keyword matching
+- `ban_filter`: Excludes non-technical and internship positions
+
+**4. Export & Storage**
+- `google_sheets_writer`: Exports to Google Sheets with duplicate prevention
+- Error handling and retry logic for network issues
+
+### Data Flow
+```
+Trigger → Config → Site Selection → HTTP Requests → XML/JSON Processing 
+    ↓
+Link Extraction → Job Data Normalization → Filtering & Deduplication
+    ↓  
+Google Sheets Export ← Duplicate Check ← Final Job List
+```
+
+---
+
+## Google Sheets Integration
+
+### Features
+- **Automatic Duplicate Prevention**: Checks existing job URLs before adding new entries
+- **Structured Data Export**: Consistent format with company, job_title, and link columns
+- **Batch Processing**: Efficient handling of multiple job entries
+- **Error Recovery**: Continues processing even if individual jobs fail
+
+### Data Format
+```json
+{
+  "company": "Netflix",
+  "job_title": "Senior Backend Engineer", 
+  "link": "https://www.jobteaser.com/en/job-offers/..."
+}
+```
+
+---
+
+## Compliance & Ethics
+
+### Ethical Scraping Principles
+- ✅ **Robots.txt Compliance**: Always check and respect robots.txt directives
+- ✅ **Terms of Service**: Only scrape sites that explicitly allow it
+- ✅ **Rate Limiting**: Implement delays and retry logic to avoid overwhelming servers
+- ✅ **Public Data Only**: Extract only publicly available job listings
+- ❌ **No Personal Data**: Never scrape applicant information or private data
+
+### Site-Specific Policies
+
+**🟢 Allowed (Direct Scraping)**
+- JobTeaser: Explicitly allows sitemap crawling per robots.txt
+- GitHub Jobs: Provides public API for job data
+- RemoteOK: Offers public API access
+
+**🟡 Monitoring Required**
+- Make It in Germany: Government site with evolving policies - **requires regular compliance checks**
+
+**🔴 Restricted (Semantic Search Only)**
+- LinkedIn, Indeed, Glassdoor: Prohibit automated scraping in ToS
+- Future implementation will use semantic search to simulate natural user behavior
+
+---
+
+## Setup & Usage
+
+### Prerequisites
+- n8n instance (self-hosted or cloud)
+- Google Sheets API access (for data export)
+- Google Custom Search Engine (for semantic search - optional)
+
+### Installation
+1. **Import n8n Workflow**:
+   ```bash
+   # Import the workflow file
+   n8n import:workflow --file=n8n/workflow/scraps_metal_v2.json
+   ```
+
+2. **Configure Google Sheets**:
+   - Create Google Sheets API credentials
+   - Add credentials to n8n Google Sheets nodes
+   - Update sheet ID in workflow configuration
+
+3. **Set Up Scheduling**:
+   - Configure trigger node for desired frequency
+   - Recommended: Every 6-12 hours to respect rate limits
+
+### Running the Workflow
+1. **Manual Execution**: Test individual nodes and data flow
+2. **Scheduled Runs**: Automated execution based on trigger configuration  
+3. **Monitor Results**: Check Google Sheets for new job entries
+4. **Review Logs**: Monitor n8n execution logs for errors or issues
+
+### Output Data Structure
+```json
+[
+  {
+    "company": "Kearney",
+    "job_title": "Senior Software Engineer",
+    "link": "https://www.jobteaser.com/en/job-offers/...",
+    "website": "jobteaser",
+    "source": "direct_scraping"
+  }
+]
+```
+
+---
+
+## Known Issues
+
+### Current Limitations
+- **JobTeaser**: ✅ **Fully Reliable** - Only source with consistent job link extraction
+- **Make It in Germany**: ⚠️ **Policy changes detected** - Site may be updating their scraping policies. Monitor robots.txt and terms of service for changes.
+- **Google CSE Quotas**: Limited to 100 free searches per day, which restricts semantic search capabilities
+- **Rate Limiting**: Some sites may temporarily block requests during high-volume operations
+
+### Troubleshooting
+- **Socket Hang Up Errors**: Implemented enhanced HTTP request configuration with timeouts and retries
+- **Duplicate Detection**: Google Sheets integration includes robust duplicate checking based on job URLs
+- **Missing Job Data**: Ban filter may be too aggressive - review and adjust keywords as needed
+
+---
+
+## Future Roadmap
+
+### Phase 1: Enhanced Compliance (In Progress)
+- ✅ **JobTeaser Integration**: Fully functional with reliable job extraction
+- 🔄 **Make It in Germany Monitoring**: Regular policy compliance checks
+- 🔄 **Error Handling**: Enhanced retry logic and timeout management
+
+### Phase 2: Semantic Search Implementation (Planned)
+For platforms that don't allow direct scraping, we will implement **semantic search** that simulates the natural flow a user would take to discover job postings:
+
+- 🔮 **LinkedIn Semantic Search**: Google CSE-based job discovery that mimics natural user browsing patterns
+- 🔮 **Indeed Integration**: Semantic search approach respecting their terms of service
+- 🔮 **Glassdoor Integration**: User-flow simulation for compliant job discovery
+- 🔮 **Alternative APIs**: Integration with official job board APIs where available
+
+**Semantic Search Benefits:**
+- Respects website terms of service by simulating human behavior
+- Uses search engines rather than direct scraping
+- Maintains compliance while accessing job market data
+- Provides broader coverage of restricted platforms
+
+### Phase 3: Advanced Features (Future)
+- 🔮 **Frontend Interface**: Web dashboard for viewing, searching, and filtering job listings
+- 🔮 **Real-time Notifications**: Instant alerts for new matching positions
+- 🔮 **Analytics Dashboard**: Job market trends and salary insights
+- 🔮 **Database Integration**: PostgreSQL/MongoDB for advanced querying and historical data
+- 🔮 **Machine Learning**: Job relevance scoring and personalized recommendations
+
+### Phase 4: Scalability & Enterprise (Future)
+- 🔮 **Multi-tenant Support**: Support for multiple users and organizations
+- 🔮 **API Development**: RESTful API for third-party integrations
+- 🔮 **Advanced Filtering**: Location-based search, salary ranges, company size filters
+- 🔮 **Compliance Automation**: Automated robots.txt monitoring and policy change detection
+
+---
+
+## Contributing
+
+### Development Guidelines
+- Respect all website terms of service and robots.txt files
+- Test thoroughly before deploying changes to production
+- Document any new site integrations or configuration changes
+- Follow ethical scraping practices and rate limiting
+
+### Adding New Job Sources
+1. Check robots.txt and terms of service for scraping permissions
+2. Add site configuration to `n8n/configuration/site_config.json`
+3. Test extraction logic with small data samples
+4. Implement appropriate error handling and rate limiting
+5. Update documentation and compliance notes
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Disclaimer
+
+This tool is designed for educational and personal use. Users are responsible for ensuring compliance with all applicable terms of service, robots.txt files, and local laws. The authors are not responsible for any misuse of this software.
