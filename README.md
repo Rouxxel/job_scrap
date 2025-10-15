@@ -34,11 +34,20 @@ This n8n-powered automation system intelligently aggregates software engineering
 
 ### Key Features
 
+**Data Collection (n8n Workflow):**
 - 🔍 **50+ Technical Keywords**: Targets specific roles from "backend developer" to "machine learning engineer"
 - 🚫 **Comprehensive Ban Filter**: Excludes internships, non-technical roles, and business positions  
 - 📊 **Google Sheets Integration**: Automatic export with duplicate prevention
 - ⚖️ **Ethical Compliance**: Respects robots.txt and terms of service
 - 🔄 **Automated Workflow**: Scheduled execution with error handling
+
+**Frontend Dashboard:**
+- 📱 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- 🔍 **Search & Filter**: Search jobs by title or company name
+- 🎨 **Modern UI**: Clean, professional interface with smooth animations
+- ♿ **Accessible**: Keyboard navigation and screen reader friendly
+- 🔄 **Real-time Data**: Fetches job listings directly from Google Sheets
+- 📊 **Card-based Layout**: Similar to StepStone and Indeed job boards
 
 ---
 
@@ -82,8 +91,13 @@ This n8n-powered automation system intelligently aggregates software engineering
 │   │   └── scraps_metal_v2.json     # Main n8n workflow
 │   └── configuration/
 │       └── site_config.json         # Site configurations & filters
+├── frontend/
+│   └── minimal_dashboard/           # React/TypeScript job dashboard
+│       ├── src/                     # Source code
+│       ├── public/                  # Static assets (favicon, etc.)
+│       ├── package.json             # Dependencies
+│       └── README.md                # Frontend setup instructions
 ├── scripts/                         # Utility scripts (future)
-├── frontend/                        # Frontend interface (planned)
 └── README.md                        # This file
 ```
 
@@ -307,32 +321,89 @@ Google Sheets Export ← Duplicate Check ← Final Job List
 
 ## Setup & Usage
 
-### Prerequisites
+### Complete Setup Workflow
+
+This project consists of two main components that work together:
+
+#### Step 1: Data Collection (n8n Workflow)
+
+**Prerequisites:**
 - n8n instance (self-hosted or cloud)
 - Google Sheets API access (for data export)
 - Google Custom Search Engine (for semantic search - optional)
 
-### Installation
-1. **Import n8n Workflow**:
+**Installation:**
+1. **Create an n8n account** at [n8n.io](https://n8n.io) or set up a self-hosted instance
+
+2. **Import the workflow**:
+   - Download the workflow file: `n8n/workflow/scraps_metal_v2.json`
+   - In your n8n workspace, go to "Workflows" → "Import from File"
+   - Upload the `scraps_metal_v2.json` file
+
+3. **Configure the workflow**:
+   - Open the `site_config.json` file from `n8n/configuration/site_config.json`
+   - Update the `sheet_config` section with your Google Sheet details:
+     ```json
+     {
+         "sheet_config": {
+             "doc_id": "your_google_sheet_id_here",
+             "sheet_1_name": "your_sheet_name_here"
+         }
+     }
+     ```
+   - Copy the entire contents of the updated `site_config.json`
+   - In the n8n workflow, find the "Set" node
+   - Paste the configuration into the Set node
+
+4. **Set up Google Sheets**:
+   - Create a Google Sheet with columns: `company`, `job_title`, `link`
+   - Make the sheet publicly accessible (Anyone with the link can view)
+   - Publish to web (File → Share → Publish to web)
+
+5. **Run the workflow**:
+   - Execute the workflow to populate your Google Sheet with job data
+   - Set up scheduling (recommended: every 6-12 hours)
+
+#### Step 2: Frontend Dashboard
+
+**Prerequisites:**
+- Node.js (version 16 or higher)
+- npm (comes with Node.js)
+- Populated Google Sheet from Step 1
+
+**Installation:**
+1. **Navigate to frontend directory**:
    ```bash
-   # Import the workflow file
-   n8n import:workflow --file=n8n/workflow/scraps_metal_v2.json
+   cd frontend/minimal_dashboard
    ```
 
-2. **Configure Google Sheets**:
-   - Create Google Sheets API credentials
-   - Add credentials to n8n Google Sheets nodes
-   - Update sheet ID in workflow configuration
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-3. **Set Up Scheduling**:
-   - Configure trigger node for desired frequency
-   - Recommended: Every 6-12 hours to respect rate limits
+3. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` file with your Google Sheet details:
+   ```env
+   VITE_SHEET_ID=your_google_sheet_id_here
+   VITE_SHEET_NAME=your_sheet_name_here
+   ```
 
-### Running the Workflow
-1. **Manual Execution**: Test individual nodes and data flow
-2. **Scheduled Runs**: Automated execution based on trigger configuration  
-3. **Monitor Results**: Check Google Sheets for new job entries
-4. **Review Logs**: Monitor n8n execution logs for errors or issues
+4. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**: Navigate to `http://localhost:5173`
+
+### Running the Complete System
+1. **Data Collection**: n8n workflow runs automatically (scheduled) or manually to populate Google Sheets
+2. **Data Display**: Frontend dashboard fetches and displays job data from Google Sheets
+3. **Updates**: Refresh the frontend dashboard to see new jobs collected by the n8n workflow
 
 ### Output Data Structure
 ```json
@@ -385,17 +456,19 @@ For platforms that don't allow direct scraping, we will implement **semantic sea
 - Maintains compliance while accessing job market data
 - Provides broader coverage of restricted platforms
 
-### Phase 3: Advanced Features (Future)
-- 🔮 **Frontend Interface**: Web dashboard for viewing, searching, and filtering job listings
+### Phase 3: Frontend Enhancements (Planned)
+- ✅ **Basic Frontend Dashboard**: React/TypeScript job dashboard with search and filtering
+- 🔮 **Advanced Filtering**: Location-based search, salary ranges, job type filters
 - 🔮 **Real-time Notifications**: Instant alerts for new matching positions
 - 🔮 **Analytics Dashboard**: Job market trends and salary insights
+- 🔮 **Job Bookmarking**: Save and organize favorite job listings
+- 🔮 **Application Tracking**: Track job applications and their status
+
+### Phase 4: Advanced Features (Future)
 - 🔮 **Database Integration**: PostgreSQL/MongoDB for advanced querying and historical data
 - 🔮 **Machine Learning**: Job relevance scoring and personalized recommendations
-
-### Phase 4: Scalability & Enterprise (Future)
 - 🔮 **Multi-tenant Support**: Support for multiple users and organizations
 - 🔮 **API Development**: RESTful API for third-party integrations
-- 🔮 **Advanced Filtering**: Location-based search, salary ranges, company size filters
 - 🔮 **Compliance Automation**: Automated robots.txt monitoring and policy change detection
 
 ---
