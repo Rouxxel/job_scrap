@@ -126,11 +126,25 @@ This n8n-powered automation system intelligently aggregates software engineering
 ]
 ```
 
-### Processing Parameters
-- **maxPagesPerQuery**: 3 pages per search query
-- **batchSizeLoop**: 1 item per batch for controlled processing  
-- **pageLanguage**: English pages only (`/en/`)
-- **linkEtiquetteFilter**: 30+ job URL patterns for accurate detection
+### Performance & Extraction Configuration
+
+The `search_config` section controls performance and extraction limits:
+
+```json
+"search_config": {
+    "maxPagesPerQuery": 3,
+    "maxLinkExtractor": 1,
+    "batchSizeLoop": 1,
+    "pageLanguage": ["/en/"]
+}
+```
+
+**Performance Parameters:**
+- **maxPagesPerQuery**: 3 pages per search query - Controls how many pages to scrape per site
+- **maxLinkExtractor**: 1 link per extraction cycle - Limits concurrent link processing to prevent overload
+- **batchSizeLoop**: 1 item per batch - Processes items individually for controlled, stable execution
+- **pageLanguage**: English pages only (`/en/`) - Filters content by language to improve relevance
+- **linkEtiquetteFilter**: 30+ job URL patterns for accurate job link detection
 
 ---
 
