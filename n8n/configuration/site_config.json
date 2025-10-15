@@ -1,5 +1,9 @@
 {
-    "search_config":{
+    "sheet_config": {
+        "doc_id": "",
+        "sheet_1_name": ""
+    },
+    "search_config": {
         "maxPagesPerQuery": 3,
         "maxLinkExtractor":1,
         "batchSizeLoop":1,
@@ -56,7 +60,40 @@
             "trainee",
             "advisory",
             "advisor",
-            "global"
+            "global",
+            "ux",
+            "ui"
+        ],
+        "ban_filter": [
+            "intern",
+            "internship",
+            "student",
+            "working student",
+            "thesis",
+            "dissertation",
+            "unpaid",
+            "volunteer",
+            "sales",
+            "marketing",
+            "business",
+            "account",
+            "financial",
+            "finance",
+            "investment",
+            "accounting",
+            "hr",
+            "customer",
+            "administrative",
+            "legal",
+            "compliance",
+            "supply chain",
+            "procurement",
+            "vendor management",
+            "content writer",
+            "copywriter",
+            "designer",
+            "social media",
+            "pr specialist"
         ]
     },
     "sites": [
@@ -80,16 +117,16 @@
             },
             "restrictions": {
                 "disallowedPaths": [
-                "/cdn-cgi/",
-                "*/apply_to_extern_url",
-                "/*/companies/job-offers/*?locale=*",
-                "/*/job-offers?locale=*&page=*&*",
-                "/*?page=*&*"
+                    "/cdn-cgi/",
+                    "*/apply_to_extern_url",
+                    "/*/companies/job-offers/*?locale=*",
+                    "/*/job-offers?locale=*&page=*&*",
+                    "/*?page=*&*"
                 ],
                 "prohibitedActivities": [
-                "Scraping beyond allowed sitemap/job pages",
-                "Accessing personal applicant data",
-                "High-volume or commercial use without permission"
+                    "Scraping beyond allowed sitemap/job pages",
+                    "Accessing personal applicant data",
+                    "High-volume or commercial use without permission"
                 ]
             },
             "headers": {
@@ -147,27 +184,27 @@
             "allowedToScrape": false,
             "note": "LinkedIn’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official APIs or licensed partners instead.",
             "policyReferences": {
-            "termsOfService": "https://www.linkedin.com/legal/user-agreement",
-            "robotsTxt": "https://www.linkedin.com/robots.txt"
+                "termsOfService": "https://www.linkedin.com/legal/user-agreement",
+                "robotsTxt": "https://www.linkedin.com/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://learn.microsoft.com/en-us/linkedin/",
-            "partnerProgram": "https://business.linkedin.com/talent-solutions",
-            "comment": "If you need job data, request access through LinkedIn's API or use official data partners. Public scraping (including /jobs/search) is prohibited."
+                "apiDocs": "https://learn.microsoft.com/en-us/linkedin/",
+                "partnerProgram": "https://business.linkedin.com/talent-solutions",
+                "comment": "If you need job data, request access through LinkedIn's API or use official data partners. Public scraping (including /jobs/search) is prohibited."
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/jobs",
-                "/jobs/search",
-                "/in",
-                "/company",
-                "/profile"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job or profile data without permission",
-                "Bulk downloading or indexing of listings or user profiles",
-                "Using data for machine learning / AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/jobs",
+                    "/jobs/search",
+                    "/in",
+                    "/company",
+                    "/profile"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job or profile data without permission",
+                    "Bulk downloading or indexing of listings or user profiles",
+                    "Using data for machine learning / AI model training without explicit license"
+                ]
             }
         },
         {
@@ -179,25 +216,25 @@
             "allowedToScrape": false,
             "note": "Indeed’s Terms of Service explicitly forbids scraping or using automated agents without express written permission. Use official partnerships or APIs instead.",
             "policyReferences": {
-            "termsOfService": "https://www.indeed.com/legal", 
-            "robotsTxt": "https://www.indeed.com/robots.txt"
+                "termsOfService": "https://www.indeed.com/legal",
+                "robotsTxt": "https://www.indeed.com/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://docs.indeed.com/job-sync-api/job-sync-api-guide",
-            "partnerApi": "Check if Indeed offers localized API or partnerships in your region",
-            "jobSyncProgram": "Indeed's synchronization or job posting partnership options if you are an ATS or employer"
+                "apiDocs": "https://docs.indeed.com/job-sync-api/job-sync-api-guide",
+                "partnerApi": "Check if Indeed offers localized API or partnerships in your region",
+                "jobSyncProgram": "Indeed's synchronization or job posting partnership options if you are an ATS or employer"
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/jobs", 
-                "/viewjob", 
-                "/cmp"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job listing data without permission",
-                "Bulk downloading / indexing of listings",
-                "Using data for machine learning / AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/jobs",
+                    "/viewjob",
+                    "/cmp"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job listing data without permission",
+                    "Bulk downloading / indexing of listings",
+                    "Using data for machine learning / AI model training without explicit license"
+                ]
             }
         },
         {
@@ -209,27 +246,27 @@
             "allowedToScrape": false,
             "note": "Glassdoor's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.",
             "policyReferences": {
-            "termsOfService": "https://www.glassdoor.com/about/terms/",
-            "robotsTxt": "https://www.glassdoor.com/robots.txt"
+                "termsOfService": "https://www.glassdoor.com/about/terms/",
+                "robotsTxt": "https://www.glassdoor.com/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://www.glassdoor.com/developer/index.htm",
-            "api": "Glassdoor provides an official API for partners. Visit https://www.glassdoor.com/developer/index.htm for more information.",
-            "partnerProgram": "Consider joining Glassdoor's partner program to access job data legally. Details can be found at https://www.glassdoor.com/partners/"
+                "apiDocs": "https://www.glassdoor.com/developer/index.htm",
+                "api": "Glassdoor provides an official API for partners. Visit https://www.glassdoor.com/developer/index.htm for more information.",
+                "partnerProgram": "Consider joining Glassdoor's partner program to access job data legally. Details can be found at https://www.glassdoor.com/partners/"
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/job-listing/*",
-                "/Job/*",
-                "/search/*",
-                "/Reviews/*",
-                "/profile/*"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job listing data without permission",
-                "Bulk downloading or indexing of job listings",
-                "Using data for machine learning or AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/job-listing/*",
+                    "/Job/*",
+                    "/search/*",
+                    "/Reviews/*",
+                    "/profile/*"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job listing data without permission",
+                    "Bulk downloading or indexing of job listings",
+                    "Using data for machine learning or AI model training without explicit license"
+                ]
             }
         },
         {
@@ -241,26 +278,26 @@
             "allowedToScrape": false,
             "note": "Adzuna provides an API; scraping may violate their terms and conditions and robots.txt.",
             "policyReferences": {
-            "termsOfService": "https://www.adzuna.de/terms-and-conditions.html",
-            "robotsTxt": "https://www.adzuna.de/robots.txt"
+                "termsOfService": "https://www.adzuna.de/terms-and-conditions.html",
+                "robotsTxt": "https://www.adzuna.de/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://www.adzuna.de/api",
-            "api": "Adzuna offers an API for partners. Visit https://www.adzuna.de/api for more information.",
-            "partnerProgram": "Consider joining Adzuna's partner program to access job data legally. Details can be found at https://www.adzuna.de/partners/"
+                "apiDocs": "https://www.adzuna.de/api",
+                "api": "Adzuna offers an API for partners. Visit https://www.adzuna.de/api for more information.",
+                "partnerProgram": "Consider joining Adzuna's partner program to access job data legally. Details can be found at https://www.adzuna.de/partners/"
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/jobs",
-                "/search",
-                "/job-listing/*",
-                "/job/*"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job listing data without permission",
-                "Bulk downloading or indexing of job listings",
-                "Using data for machine learning / AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/jobs",
+                    "/search",
+                    "/job-listing/*",
+                    "/job/*"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job listing data without permission",
+                    "Bulk downloading or indexing of job listings",
+                    "Using data for machine learning / AI model training without explicit license"
+                ]
             }
         },
         {
@@ -272,27 +309,27 @@
             "allowedToScrape": false,
             "note": "StepStone's robots.txt disallows crawling of job listings and other key pages. Their Terms of Use prohibit scraping or using automated agents without explicit permission. Use official APIs or partner access instead.",
             "policyReferences": {
-            "termsOfService": "https://www.stepstone.de/ueber-stepstone/allgemeine-geschaeftsbedingungen-vom-27-april-2022/",
-            "robotsTxt": "https://www.stepstone.de/robots.txt"
+                "termsOfService": "https://www.stepstone.de/ueber-stepstone/allgemeine-geschaeftsbedingungen-vom-27-april-2022/",
+                "robotsTxt": "https://www.stepstone.de/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://www.stepstone.de/partners",
-            "api": "StepStone provides an API for partners. Visit https://www.stepstone.de/partners for more information.",
-            "partnerProgram": "Consider joining StepStone's partner program to access job data legally. Details can be found at https://www.stepstone.de/partners"
+                "apiDocs": "https://www.stepstone.de/partners",
+                "api": "StepStone provides an API for partners. Visit https://www.stepstone.de/partners for more information.",
+                "partnerProgram": "Consider joining StepStone's partner program to access job data legally. Details can be found at https://www.stepstone.de/partners"
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/job-listing/*",
-                "/Job/*",
-                "/search/*",
-                "/Reviews/*",
-                "/profile/*"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job listing data without permission",
-                "Bulk downloading or indexing of job listings",
-                "Using data for machine learning or AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/job-listing/*",
+                    "/Job/*",
+                    "/search/*",
+                    "/Reviews/*",
+                    "/profile/*"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job listing data without permission",
+                    "Bulk downloading or indexing of job listings",
+                    "Using data for machine learning or AI model training without explicit license"
+                ]
             }
         },
         {
@@ -304,27 +341,27 @@
             "allowedToScrape": false,
             "note": "Greenhouse's robots.txt disallows crawling of many internal paths. Scraping may violate their terms of service. Use their Job Board API or partner access instead.",
             "policyReferences": {
-            "termsOfService": "https://www.greenhouse.com/legal",
-            "robotsTxt": "https://support.greenhouse.io/robots.txt"
+                "termsOfService": "https://www.greenhouse.com/legal",
+                "robotsTxt": "https://support.greenhouse.io/robots.txt"
             },
             "alternatives": {
-            "apiDocs": "https://developers.greenhouse.io/job-board.html",
-            "api": "Greenhouse offers a Job Board API for partners. Visit https://developers.greenhouse.io/job-board.html for more information.",
-            "partnerProgram": "Consider joining Greenhouse's partner program to access job data legally. Details can be found at https://integrations.greenhouse.com/"
+                "apiDocs": "https://developers.greenhouse.io/job-board.html",
+                "api": "Greenhouse offers a Job Board API for partners. Visit https://developers.greenhouse.io/job-board.html for more information.",
+                "partnerProgram": "Consider joining Greenhouse's partner program to access job data legally. Details can be found at https://integrations.greenhouse.com/"
             },
             "restrictions": {
-            "disallowedPaths": [
-                "/search",
-                "/jobs",
-                "/job-listing/*",
-                "/job/*",
-                "/companies/*"
-            ],
-            "prohibitedActivities": [
-                "Using bots or scrapers to extract job listing data without permission",
-                "Bulk downloading or indexing of job listings",
-                "Using data for machine learning or AI model training without explicit license"
-            ]
+                "disallowedPaths": [
+                    "/search",
+                    "/jobs",
+                    "/job-listing/*",
+                    "/job/*",
+                    "/companies/*"
+                ],
+                "prohibitedActivities": [
+                    "Using bots or scrapers to extract job listing data without permission",
+                    "Bulk downloading or indexing of job listings",
+                    "Using data for machine learning or AI model training without explicit license"
+                ]
             }
         }
     ]
