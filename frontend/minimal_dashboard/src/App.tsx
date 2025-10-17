@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { config, validateConfig, getGoogleSheetsUrls } from './config';
 import './App.css';
 
@@ -16,12 +16,7 @@ const SearchIcon = ({ size = 20, className = '' }: IconProps) => (
   </svg>
 );
 
-const MapPinIcon = ({ size = 16, className = '' }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-    <circle cx="12" cy="10" r="3"></circle>
-  </svg>
-);
+
 
 const Building2Icon = ({ size = 24, className = '' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
@@ -87,35 +82,35 @@ function App() {
   const fetchJobs = async () => {
     setLoading(true);
     setError(null);
-    
+
     // Try multiple URL formats from configuration
     const urlsToTry = getGoogleSheetsUrls();
-    
+
     for (let i = 0; i < urlsToTry.length; i++) {
       try {
         console.log(`Trying URL ${i + 1}:`, urlsToTry[i]);
-        
+
         const response = await fetch(urlsToTry[i], {
           method: 'GET',
           headers: {
             'Accept': 'text/csv,text/plain,*/*'
           }
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const csvText = await response.text();
         console.log('CSV Response:', csvText.substring(0, 200) + '...');
-        
+
         // Check if we got a login page instead of CSV
         if (csvText.includes('accounts.google.com') || csvText.includes('Sign in')) {
           throw new Error('Sheet is not publicly accessible. Please make it public.');
         }
-        
+
         const rows = csvText.split('\n').slice(1); // Skip header row
-        
+
         const jobsData: Job[] = rows
           .filter(row => row.trim()) // Filter out empty rows
           .map(row => {
@@ -136,7 +131,7 @@ function App() {
         console.log('Setting loading to false...');
         setLoading(false); // Explicitly set loading to false on success
         return; // Success, exit the loop
-        
+
       } catch (err) {
         console.error(`URL ${i + 1} failed:`, err);
         if (i === urlsToTry.length - 1) {
@@ -266,7 +261,7 @@ function App() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="job-card-footer">
                 <div className="job-actions">
                   <ExternalLinkIcon size={16} />
