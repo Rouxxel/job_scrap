@@ -1,0 +1,49 @@
+#############################################################################
+### Dockerfile for Job Scraper Backend
+### FastAPI + Uvicorn + Python 3.12
+#############################################################################
+
+# Base image
+FROM python:3.12-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# Working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY . .
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Create non-root user for security
+RUN adduser --disabled-password --gecos '' --shell /bin/bash appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Expose the application port
+EXPOSE 6000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:6000/api/v1/health || exit 1
+
+# Run the application
+CMD ["python", "main.py"]

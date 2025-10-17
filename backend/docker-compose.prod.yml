@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  job-scraper-backend:
+    environment:
+      - RATE_LIMIT_STORAGE_URI=redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: job-scraper-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - job-scraper-network
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:

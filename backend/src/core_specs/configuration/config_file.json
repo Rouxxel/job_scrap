@@ -1,0 +1,57 @@
+{
+    "defaults":{
+        "general_data_path":"src/data/general_data.json",
+        "doc_id": "idhere",
+        "sheet_1_name": "namehere"
+    },
+    
+    "logging":{
+        "logging_level":"debug",
+        "dir_name":"logs",
+        "log_file_name":"rift_analyzer_bcknd"
+    },
+    "email_validation":{
+        "allowed_providers":["gmail","outlook","yahoo","hotmail","icloud","protonmail","aol","zoho","gmx","mail"],
+        "allowed_tlds":["com", "org", "net", "co", "io", "edu", "gov"]
+    },
+
+    "network":{
+        "uvicorn_app_reference": "main:app",
+        "server_port":6000,
+        "host": "0.0.0.0",
+        "reload": false,
+        "workers": 1,
+        "proxy_headers": true
+    },
+
+    "endpoints": {
+        "root_directory_endpoint":{
+            "request_limit":25,
+            "unit_of_time_for_limit":"m",
+            "endpoint_prefix": "",
+            "endpoint_tag":"root",
+            "endpoint_route": "/"
+        },
+        "get_jobs_endpoint":{
+            "request_limit":30,
+            "unit_of_time_for_limit":"m",
+            "endpoint_prefix": "/api/v1/jobs",
+            "endpoint_tag":"jobs",
+            "endpoint_route": "/list"
+        },
+        "refresh_jobs_endpoint":{
+            "request_limit":10,
+            "unit_of_time_for_limit":"m",
+            "endpoint_prefix": "/api/v1/jobs",
+            "endpoint_tag":"jobs",
+            "endpoint_route": "/refresh"
+        },
+        "health_check_endpoint":{
+            "request_limit":100,
+            "unit_of_time_for_limit":"m",
+            "endpoint_prefix": "/api/v1",
+            "endpoint_tag":"health",
+            "endpoint_route": "/health"
+        }
+    }
+}

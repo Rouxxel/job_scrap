@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  job-scraper-backend:
+    build:
+      context: .
+      dockerfile: DOCKERFILE
+    container_name: job-scraper-backend
+    ports:
+      - "6000:6000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=6000
+      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID}
+      - GOOGLE_SHEET_NAME=${GOOGLE_SHEET_NAME}
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - job-scraper-network
+
+  # Optional: Redis for rate limiting (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: job-scraper-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - job-scraper-network
+
+networks:
+  job-scraper-network:
+    driver: bridge
+
+# volumes:
+#   redis_data:
