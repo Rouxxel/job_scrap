@@ -4,12 +4,14 @@ A modern, responsive job dashboard that displays software engineering positions 
 
 ## Features
 
-- 📊 **Real-time Data**: Fetches job listings directly from Google Sheets
+- 🔗 **Backend Integration**: Connects to FastAPI backend for job data
 - 🔍 **Search & Filter**: Search jobs by title or company name
 - 📱 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
 - 🎨 **Modern UI**: Clean, professional interface with smooth animations
 - ♿ **Accessible**: Keyboard navigation and screen reader friendly
-- 🔄 **Auto-refresh**: Manual refresh button to get latest job data
+- 🔄 **Smart Refresh**: Manual refresh with backend caching
+- ⚙️ **Configurable**: Centralized configuration system for easy deployment
+- 🔧 **Development Tools**: Runtime configuration management and debugging
 
 ## Complete Setup Workflow
 
@@ -43,14 +45,28 @@ Before running the frontend, you need to populate your Google Sheet with job dat
    - Execute the workflow to populate your Google Sheet with job data
    - The workflow will scrape job listings and populate your sheet with company, job_title, and link columns
 
-### Step 2: Set up Frontend (Data Display)
+### Step 2: Set up Backend API
+
+1. **Navigate to backend directory**:
+   ```bash
+   cd ../../backend
+   ```
+
+2. **Start the backend server**:
+   ```bash
+   python main.py
+   ```
+   
+   The backend will be available at `http://localhost:3001`
+
+### Step 3: Set up Frontend (Data Display)
 
 ## Prerequisites
 
 Before running the frontend, you need:
 - **Node.js** (version 16 or higher)
 - **npm** (comes with Node.js)
-- **Google Sheet ID** and **Sheet Name** for your job data
+- **Running backend server** from Step 2
 
 ## Setup Instructions
 
@@ -65,28 +81,26 @@ npm install
 ```
 
 ### 3. Configure Environment Variables
-Create a `.env` file in the `frontend/minimal_dashboard` directory with your Google Sheets configuration:
+Create a `.env` file in the `frontend/minimal_dashboard` directory:
 
 ```bash
 # Copy the example file
 cp .env.example .env
 ```
 
-Then edit the `.env` file and update these required variables:
+Then edit the `.env` file and update the backend API URL:
 ```env
-# Replace with your Google Sheet ID and sheet name
-VITE_SHEET_ID=your_google_sheet_id_here
-VITE_SHEET_NAME=your_sheet_name_here
+# Backend API URL (update when deploying)
+VITE_API_BASE_URL=http://localhost:3001
+
+# App customization (optional)
+VITE_APP_TITLE=Job Dashboard - Software Engineering Positions
 ```
 
-**How to get your Google Sheet ID:**
-- Open your Google Sheet in a browser
-- Copy the ID from the URL: `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
-- The Sheet ID is the long string between `/d/` and `/edit`
-
-**Sheet Name:**
-- This is the name of the tab/worksheet in your Google Sheet (e.g., "Sheet1", "Jobs", etc.)
-
+**For different deployments:**
+- **Local development**: `http://localhost:3001`
+- **Render.com**: `https://your-backend-service.onrender.com`
+- **Custom domain**: `https://api.yourdomain.com`
 ### 4. Start Development Server
 ```bash
 npm run dev
@@ -95,38 +109,60 @@ npm run dev
 ### 5. Open in Browser
 Navigate to `http://localhost:5173`
 
-## Configuration
+## Configuration System
 
-The dashboard reads job data from Google Sheets using these environment variables:
-- **VITE_SHEET_ID**: Your Google Sheet document ID
-- **VITE_SHEET_NAME**: The specific sheet/tab name within the document
-- **Expected Columns**: `company`, `job_title`, `link`
+The frontend uses a centralized configuration system that supports multiple environments and easy deployment.
 
-### Google Sheets Setup
+### Environment Variables
 
-To use your Google Sheet as a data source, follow these steps:
+**Required:**
+- `VITE_API_BASE_URL` - Backend API URL
 
-1. **Create or prepare your Google Sheet** with the required columns:
-   - `company` - Company name
-   - `job_title` - Job position title  
-   - `link` - URL to the job posting
+**Optional:**
+- `VITE_APP_TITLE` - Application title
+- `VITE_ENVIRONMENT` - Environment override (development, staging, production)
+- `VITE_DEBUG_MODE` - Enable debug features
+- `VITE_JOBS_PER_PAGE` - Number of jobs per page
 
-2. **Make the sheet publicly accessible**:
-   - Click "Share" button in your Google Sheet
-   - Change access to "Anyone with the link can view"
-   - Copy the sharing link
+### Configuration Files
 
-3. **Publish to web** (required for CSV access):
-   - Go to File → Share → Publish to web
-   - Select the specific sheet/tab you want to publish
-   - Choose "Comma-separated values (.csv)" as the format
-   - Click "Publish"
+The configuration system is located in `src/config/`:
+- `api.config.ts` - API endpoints and settings
+- `app.config.ts` - Application settings
+- `index.ts` - Configuration exports
 
-4. **Get your Sheet ID and Name**:
-   - Sheet ID: Extract from the URL `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
-   - Sheet Name: The name of the tab (visible at the bottom of the sheet)
+### Runtime Configuration (Development)
 
-5. **Update your `.env` file** with these values
+In development mode, you can change the API URL at runtime:
+
+```javascript
+// Available in browser console
+switchToLocal()        // Switch to localhost:3001
+switchToProduction()   // Switch to production URL
+testApi()             // Test current API connection
+```
+
+### Deployment Configuration
+
+**Local Development:**
+```env
+VITE_API_BASE_URL=http://localhost:3001
+VITE_ENVIRONMENT=development
+```
+
+**Production (Render.com):**
+```env
+VITE_API_BASE_URL=https://your-backend-service.onrender.com
+VITE_ENVIRONMENT=production
+```
+
+**Production (Custom Domain):**
+```env
+VITE_API_BASE_URL=https://api.yourdomain.com
+VITE_ENVIRONMENT=production
+```
+
+For detailed configuration options, see [CONFIG.md](CONFIG.md).
 
 ## Data Format
 

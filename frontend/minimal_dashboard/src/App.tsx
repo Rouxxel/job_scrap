@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { config, validateConfig, getGoogleSheetsUrls } from './config';
+import { apiService } from './services/api';
+import type { Job } from './services/api';
+import { APP_CONFIG, validateAllConfigs, getConfigSummary } from './config';
 import './App.css';
 
 // Icon component props interface
@@ -15,8 +17,6 @@ const SearchIcon = ({ size = 20, className = '' }: IconProps) => (
     <path d="m21 21-4.35-4.35"></path>
   </svg>
 );
-
-
 
 const Building2Icon = ({ size = 24, className = '' }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
@@ -53,13 +53,11 @@ const AlertCircleIcon = ({ size = 20, className = '' }: IconProps) => (
   </svg>
 );
 
-interface Job {
-  company: string;
-  job_title: string;
-  link: string;
-}
-
-// No hardcoded values - all configuration comes from environment variables
+// Configuration from centralized config system
+const config = {
+  appTitle: APP_CONFIG.title,
+  apiInfo: apiService.getApiInfo(),
+};
 
 function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -68,85 +66,92 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [backendAvailable, setBackendAvailable] = useState<boolean | null>(null);
 
-  // Validate configuration on mount
-  useEffect(() => {
-    const configErrors = validateConfig();
-    if (configErrors.length > 0) {
-      setError(`Configuration errors: ${configErrors.join(', ')}`);
-      setLoading(false);
-      return;
-    }
-  }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (forceRefresh: boolean = false) => {
     setLoading(true);
     setError(null);
-
-    // Try multiple URL formats from configuration
-    const urlsToTry = getGoogleSheetsUrls();
-
-    for (let i = 0; i < urlsToTry.length; i++) {
-      try {
-        console.log(`Trying URL ${i + 1}:`, urlsToTry[i]);
-
-        const response = await fetch(urlsToTry[i], {
-          method: 'GET',
-          headers: {
-            'Accept': 'text/csv,text/plain,*/*'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const csvText = await response.text();
-        console.log('CSV Response:', csvText.substring(0, 200) + '...');
-
-        // Check if we got a login page instead of CSV
-        if (csvText.includes('accounts.google.com') || csvText.includes('Sign in')) {
-          throw new Error('Sheet is not publicly accessible. Please make it public.');
-        }
-
-        const rows = csvText.split('\n').slice(1); // Skip header row
-
-        const jobsData: Job[] = rows
-          .filter(row => row.trim()) // Filter out empty rows
-          .map(row => {
-            // Parse CSV row (handle quoted values)
-            const columns = row.split(',').map(col => col.replace(/^"|"$/g, '').trim());
-            return {
-              company: columns[0] || 'Unknown Company',
-              job_title: columns[1] || 'Unknown Position',
-              link: columns[2] || '#'
-            };
-          })
-          .filter(job => job.company !== 'Unknown Company' && job.job_title !== 'Unknown Position');
-
-        setJobs(jobsData);
-        setFilteredJobs(jobsData);
+    
+    try {
+      console.log(`Fetching jobs from backend API (refresh: ${forceRefresh})`);
+      
+      // Call appropriate API endpoint
+      const response = forceRefresh 
+        ? await apiService.refreshJobs()
+        : await apiService.getJobs();
+      
+      if (response.success && response.data) {
+        setJobs(response.data);
+        setFilteredJobs(response.data);
         setLastUpdated(new Date());
-        console.log(`Successfully loaded ${jobsData.length} jobs`);
-        console.log('Setting loading to false...');
-        setLoading(false); // Explicitly set loading to false on success
-        return; // Success, exit the loop
-
-      } catch (err) {
-        console.error(`URL ${i + 1} failed:`, err);
-        if (i === urlsToTry.length - 1) {
-          // Last URL failed, set error
-          setError(err instanceof Error ? err.message : 'Failed to fetch jobs from all sources');
-          setLoading(false); // Set loading to false on final error
+        setBackendAvailable(true);
+        
+        console.log(`Successfully loaded ${response.data.length} jobs from API`);
+        console.log(`Data was ${response.cached ? 'cached' : 'fresh'}`);
+      } else {
+        throw new Error('Invalid response from API');
+      }
+      
+    } catch (err) {
+      console.error('Failed to fetch jobs from API:', err);
+      setBackendAvailable(false);
+      
+      // Provide helpful error messages
+      let errorMessage = 'Failed to fetch jobs from backend API';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('fetch') || err.message.includes('timeout')) {
+          errorMessage = `Cannot connect to backend server. Please ensure the backend is running on ${config.apiInfo.baseUrl}`;
+        } else {
+          errorMessage = err.message;
         }
       }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Check configuration and backend availability on mount
   useEffect(() => {
-    // Set document title from configuration
+    const initializeApp = async () => {
+      // Validate configuration
+      const errors = validateAllConfigs();
+      
+      if (errors.length > 0) {
+        setLoading(false);
+        setError(`Configuration errors: ${errors.join(', ')}`);
+        return;
+      }
+      
+      // Check backend availability
+      const available = await apiService.isBackendAvailable();
+      setBackendAvailable(available);
+      
+      if (available) {
+        fetchJobs();
+      } else {
+        setLoading(false);
+        setError(`Backend server is not available at ${config.apiInfo.baseUrl}. Please start the backend server.`);
+      }
+    };
+
+    // Set document title
     document.title = config.appTitle;
-    fetchJobs();
+    
+    // Log configuration summary in development
+    if (APP_CONFIG.development.showDebugInfo) {
+      console.log('App Configuration:', getConfigSummary());
+      
+      // Import and run config test in development
+      import('./config/config.test').then(({ testConfiguration }) => {
+        testConfiguration();
+      });
+    }
+    
+    initializeApp();
   }, []);
 
   useEffect(() => {
@@ -167,6 +172,10 @@ function App() {
     }
   };
 
+  const handleRefresh = () => {
+    fetchJobs(true); // Force refresh
+  };
+
   const getCompanyInitials = (company: string) => {
     return company
       .split(' ')
@@ -184,13 +193,14 @@ function App() {
       .join(' ');
   };
 
-  console.log('Current loading state:', loading, 'Jobs count:', jobs.length);
-
   if (loading) {
     return (
       <div className="loading-container">
         <RefreshIcon size={48} className="loading-spinner" />
         <p>Loading job listings...</p>
+        {backendAvailable === false && (
+          <p className="loading-subtitle">Checking backend connection...</p>
+        )}
       </div>
     );
   }
@@ -210,6 +220,11 @@ function App() {
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </span>
             )}
+            {backendAvailable !== null && (
+              <span className={`backend-status ${backendAvailable ? 'online' : 'offline'}`}>
+                Backend: {backendAvailable ? 'Online' : 'Offline'}
+              </span>
+            )}
           </div>
         </div>
       </header>
@@ -226,7 +241,12 @@ function App() {
               className="search-input"
             />
           </div>
-          <button onClick={fetchJobs} className="refresh-button" disabled={loading}>
+          <button 
+            onClick={handleRefresh} 
+            className="refresh-button" 
+            disabled={loading || !backendAvailable}
+            title={backendAvailable ? "Refresh job data" : "Backend unavailable"}
+          >
             <RefreshIcon size={20} className={loading ? 'loading-spinner' : ''} />
             Refresh
           </button>
@@ -236,7 +256,13 @@ function App() {
           <div className="error-container">
             <AlertCircleIcon size={20} />
             <span>Error: {error}</span>
-            <button onClick={fetchJobs} className="retry-button">
+            {backendAvailable === false && (
+              <div className="error-help">
+                <p>Make sure the backend server is running:</p>
+                <code>cd backend && python main.py</code>
+              </div>
+            )}
+            <button onClick={() => fetchJobs()} className="retry-button" disabled={!backendAvailable}>
               Retry
             </button>
           </div>
@@ -261,7 +287,7 @@ function App() {
                   </p>
                 </div>
               </div>
-
+              
               <div className="job-card-footer">
                 <div className="job-actions">
                   <ExternalLinkIcon size={16} />
