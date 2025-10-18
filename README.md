@@ -16,7 +16,9 @@ An intelligent job scraping and aggregation system built with n8n that collects 
 6. [Data Pipeline](#data-pipeline)
 7. [Google Sheets Integration](#google-sheets-integration)
 8. [Compliance & Ethics](#compliance--ethics)
-9. [Setup & Usage](#setup--usage)  
+9. [Setup & Usage](#setup--usage)
+   - [Essential Configuration Files](#-essential-configuration-files)
+   - [Quick Reference - Configuration Checklist](#-quick-reference---configuration-checklist)
 10. [Known Issues](#known-issues)
 11. [Future Roadmap](#future-roadmap)  
 
@@ -339,6 +341,49 @@ Google Sheets Export ← Duplicate Check ← Final Job List
 
 This project consists of two main components that work together:
 
+### 🔧 Essential Configuration Files
+
+Before starting, you need to configure these key files with your specific information:
+
+#### **n8n Workflow Configuration**
+- **File**: `n8n/configuration/site_config.json`
+- **Purpose**: Controls job scraping behavior and Google Sheets integration
+- **Required Updates**:
+  ```json
+  {
+    "sheet_config": {
+      "doc_id": "YOUR_GOOGLE_SHEET_ID_HERE",
+      "sheet_1_name": "YOUR_SHEET_NAME_HERE"
+    }
+  }
+  ```
+
+#### **Backend Configuration**
+- **File**: `backend/.env`
+- **Purpose**: Backend server and Google Sheets connection settings
+- **Required Updates**:
+  ```env
+  GOOGLE_SHEET_ID=YOUR_GOOGLE_SHEET_ID_HERE
+  GOOGLE_SHEET_NAME=YOUR_SHEET_NAME_HERE
+  ```
+
+#### **Frontend Configuration**
+- **File**: `frontend/minimal_dashboard/.env`
+- **Purpose**: Frontend API connection and app settings
+- **Required Updates**:
+  ```env
+  VITE_API_BASE_URL=http://localhost:3001
+  VITE_APP_TITLE=Job Dashboard - Software Engineering Positions
+  ```
+
+#### **Google Sheets Setup**
+- **Requirements**: 
+  - Public Google Sheet with columns: `company`, `job_title`, `link`
+  - Sheet must be published to web (File → Share → Publish to web)
+  - Extract Sheet ID from URL: `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
+
+---
+
 #### Step 1: Data Collection (n8n Workflow)
 
 **Prerequisites:**
@@ -431,6 +476,29 @@ This project consists of two main components that work together:
   }
 ]
 ```
+
+### 📋 Quick Reference - Configuration Checklist
+
+**Before running the system, ensure these files are configured:**
+
+| Component | File | Key Settings | Status |
+|-----------|------|--------------|--------|
+| **n8n Workflow** | `n8n/configuration/site_config.json` | `doc_id`, `sheet_1_name` | ⚠️ Required |
+| **Backend API** | `backend/.env` | `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_NAME` | ⚠️ Required |
+| **Frontend** | `frontend/minimal_dashboard/.env` | `VITE_API_BASE_URL` | ⚠️ Required |
+| **Google Sheet** | Your Google Sheets | Public access, published to web | ⚠️ Required |
+
+**Startup Order:**
+1. Configure Google Sheet (public + published)
+2. Update configuration files with your Sheet ID
+3. Run n8n workflow to populate data
+4. Start backend: `cd backend && python main.py`
+5. Start frontend: `cd frontend/minimal_dashboard && npm run dev`
+
+**URLs:**
+- Backend API: http://localhost:3001
+- Frontend App: http://localhost:5173
+- API Docs: http://localhost:3001/docs
 
 ---
 
