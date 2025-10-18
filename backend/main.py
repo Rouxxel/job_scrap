@@ -90,4 +90,4 @@ if __name__ == "__main__":
     )
     
     log_handler.info(f"Server started successfully on port {port}")
-    #available at: http://127.0.0.1:6000/docs
+    #available at: http://127.0.0.1:3001/docs

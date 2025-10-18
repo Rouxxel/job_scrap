@@ -53,13 +53,13 @@ This is the FastAPI backend for the job scraper and dashboard system. It provide
    start.bat
    ```
 
-The API will be available at `http://localhost:6000`
+The API will be available at `http://localhost:3001`
 
 ### API Documentation
 
 Once the server is running, visit:
-- **Interactive API docs**: http://localhost:6000/docs
-- **Alternative docs**: http://localhost:6000/redoc
+- **Interactive API docs**: http://localhost:3001/docs
+- **Alternative docs**: http://localhost:3001/redoc
 
 ## API Endpoints
 
@@ -128,7 +128,7 @@ docker-compose down
 docker build -t job-scraper-backend .
 
 # Run the container
-docker run -p 6000:6000 --env-file .env job-scraper-backend
+docker run -p 3001:3001 --env-file .env job-scraper-backend
 ```
 
 #### Environment Variables for Docker
@@ -137,7 +137,7 @@ Make sure your `.env` file contains:
 GOOGLE_SHEET_ID=your_google_sheet_id_here
 GOOGLE_SHEET_NAME=your_sheet_name_here
 HOST=0.0.0.0
-PORT=6000
+PORT=3001
 ```
 
 ## Troubleshooting
@@ -188,7 +188,7 @@ GOOGLE_SHEET_NAME=your_production_sheet_name
 
 # Optional
 HOST=0.0.0.0
-PORT=6000
+PORT=3001
 RATE_LIMIT_STORAGE_URI=redis://redis:6379  # For Redis-based rate limiting
 ```
 

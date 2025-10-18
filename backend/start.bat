@@ -31,9 +31,9 @@ REM Create logs directory
 if not exist logs mkdir logs
 
 REM Start the server
-echo 🌟 Starting FastAPI server on http://localhost:6000
-echo 📖 API Documentation: http://localhost:6000/docs
-echo 🔍 Health Check: http://localhost:6000/api/v1/health
+echo 🌟 Starting FastAPI server on http://localhost:3001
+echo 📖 API Documentation: http://localhost:3001/docs
+echo 🔍 Health Check: http://localhost:3001/api/v1/health
 echo.
 python main.py
 

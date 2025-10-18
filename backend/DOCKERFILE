@@ -39,11 +39,11 @@ RUN adduser --disabled-password --gecos '' --shell /bin/bash appuser && \
 USER appuser
 
 # Expose the application port
-EXPOSE 6000
+EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:6000/api/v1/health || exit 1
+    CMD curl -f http://localhost:3001/api/v1/health || exit 1
 
 # Run the application
 CMD ["python", "main.py"]
