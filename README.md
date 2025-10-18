@@ -353,7 +353,7 @@ Before starting, you need to configure these key files with your specific inform
   {
     "sheet_config": {
       "doc_id": "YOUR_GOOGLE_SHEET_ID_HERE",
-      "sheet_1_name": "YOUR_SHEET_NAME_HERE"
+      "job_sheet_name": "YOUR_SHEET_NAME_HERE"
     }
   }
   ```
@@ -363,9 +363,15 @@ Before starting, you need to configure these key files with your specific inform
 - **Purpose**: Backend server and Google Sheets connection settings
 - **Required Updates**:
   ```env
+  # Required: Google Sheets configuration
   GOOGLE_SHEET_ID=YOUR_GOOGLE_SHEET_ID_HERE
   GOOGLE_SHEET_NAME=YOUR_SHEET_NAME_HERE
+  
+  # Optional: Server settings (defaults provided)
+  HOST=0.0.0.0
+  PORT=3001
   ```
+- **Note**: Configuration is now environment-variable based. No need to edit JSON files.
 
 #### **Frontend Configuration**
 - **File**: `frontend/minimal_dashboard/.env`
@@ -406,7 +412,7 @@ Before starting, you need to configure these key files with your specific inform
      {
          "sheet_config": {
              "doc_id": "your_google_sheet_id_here",
-             "sheet_1_name": "your_sheet_name_here"
+             "job_sheet_name": "your_sheet_name_here"
          }
      }
      ```
@@ -483,7 +489,7 @@ Before starting, you need to configure these key files with your specific inform
 
 | Component | File | Key Settings | Status |
 |-----------|------|--------------|--------|
-| **n8n Workflow** | `n8n/configuration/site_config.json` | `doc_id`, `sheet_1_name` | ⚠️ Required |
+| **n8n Workflow** | `n8n/configuration/site_config.json` | `doc_id`, `job_sheet_name` | ⚠️ Required |
 | **Backend API** | `backend/.env` | `GOOGLE_SHEET_ID`, `GOOGLE_SHEET_NAME` | ⚠️ Required |
 | **Frontend** | `frontend/minimal_dashboard/.env` | `VITE_API_BASE_URL` | ⚠️ Required |
 | **Google Sheet** | Your Google Sheets | Public access, published to web | ⚠️ Required |

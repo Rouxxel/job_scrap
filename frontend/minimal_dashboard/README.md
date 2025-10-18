@@ -33,7 +33,7 @@ Before running the frontend, you need to populate your Google Sheet with job dat
      {
          "sheet_config": {
              "doc_id": "your_google_sheet_id_here",
-             "sheet_1_name": "your_sheet_name_here"
+             "job_sheet_name": "your_sheet_name_here"
          }
      }
      ```

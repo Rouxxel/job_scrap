@@ -32,9 +32,16 @@ This is the FastAPI backend for the job scraper and dashboard system. It provide
 3. **Configure environment variables**:
    Edit `.env` file with your Google Sheet details:
    ```env
+   # Required: Google Sheets configuration
    GOOGLE_SHEET_ID=your_google_sheet_id_here
    GOOGLE_SHEET_NAME=your_sheet_name_here
+   
+   # Optional: Server configuration (defaults provided)
+   HOST=0.0.0.0
+   PORT=3001
    ```
+   
+   **Note**: Google Sheets configuration is now managed entirely through environment variables. No need to duplicate these values in the JSON configuration file.
 
 4. **Start the server**:
    
@@ -90,7 +97,7 @@ The backend uses a JSON configuration file at `src/core_specs/configuration/conf
 
 ### Environment Variables
 - `GOOGLE_SHEET_ID` - Your Google Sheets document ID
-- `GOOGLE_SHEET_NAME` - Sheet name/tab name (default: "sheet_1")
+- `GOOGLE_SHEET_NAME` - Sheet name/tab name (default: "job_sheet")
 
 ### Google Sheets Setup
 Your Google Sheet must be:

@@ -8,7 +8,7 @@ if not exist .env (
     echo ❌ .env file not found. Please create one with your Google Sheets configuration.
     echo Example:
     echo GOOGLE_SHEET_ID=your_sheet_id_here
-    echo GOOGLE_SHEET_NAME=sheet_1
+    echo GOOGLE_SHEET_NAME=job_sheet
     pause
     exit /b 1
 )

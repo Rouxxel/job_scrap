@@ -38,9 +38,21 @@ def load_config() -> Dict[str, Any]:
         with open(config_path, 'r', encoding='utf-8') as file:
             config = json.load(file)
         
-        # Override with environment variables where applicable
-        config['defaults']['doc_id'] = os.getenv('GOOGLE_SHEET_ID', config['defaults']['doc_id'])
-        config['defaults']['sheet_1_name'] = os.getenv('GOOGLE_SHEET_NAME', config['defaults']['sheet_1_name'])
+        # Set Google Sheets configuration from environment variables (primary source)
+        # Create defaults section if it doesn't exist
+        if 'defaults' not in config:
+            config['defaults'] = {}
+        
+        # Get Google Sheets configuration from environment variables
+        google_sheet_id = os.getenv('GOOGLE_SHEET_ID', config['defaults'].get('doc_id', ''))
+        google_sheet_name = os.getenv('GOOGLE_SHEET_NAME', config['defaults'].get('job_sheet_name', 'job_sheet'))
+        
+        # Validate required Google Sheets configuration
+        if not google_sheet_id:
+            log_handler.warning("GOOGLE_SHEET_ID not set in environment variables. Some features may not work.")
+        
+        config['defaults']['doc_id'] = google_sheet_id
+        config['defaults']['job_sheet_name'] = google_sheet_name
         
         # Network configuration from environment
         config['network']['host'] = os.getenv('HOST', config['network']['host'])

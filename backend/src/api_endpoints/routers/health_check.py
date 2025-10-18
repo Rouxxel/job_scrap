@@ -48,7 +48,7 @@ async def health_check_endpoint(request: Request) -> Dict[str, Any]:
     config_status = {
         "sheet_configured": bool(config_loader['defaults']['doc_id']),
         "sheet_id": config_loader['defaults']['doc_id'][:10] + "..." if config_loader['defaults']['doc_id'] else None,
-        "sheet_name": config_loader['defaults']['sheet_1_name']
+        "sheet_name": config_loader['defaults']['job_sheet_name']
     }
     
     return {

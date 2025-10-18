@@ -1,8 +1,6 @@
 {
     "defaults":{
-        "general_data_path":"src/data/general_data.json",
-        "doc_id": "idhere",
-        "sheet_1_name": "namehere"
+        "general_data_path":"src/data/general_data.json"
     },
     
     "logging":{
