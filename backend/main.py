@@ -33,7 +33,7 @@ from src.core_specs.configuration.config_loader import config_loader
 
 #Endpoints imports
 from src.api_endpoints.root_endpoint import router as root_router
-from src.api_endpoints.routers.jobs_info.get_jobs import router as jobs_router
+from src.api_endpoints.routers.jobs_info import jobs_router
 from src.api_endpoints.routers.health_check import router as health_router
 
 """ENVIRONMENT VARIABLES---------------------------------------------------"""

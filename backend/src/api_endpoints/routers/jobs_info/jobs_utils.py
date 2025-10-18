@@ -1,44 +1,52 @@
 ################################################################################
-# Jobs Data Fetch Endpoint
+# Jobs Utilities
 ##
-# @file get_jobs.py
+# @file jobs_utils.py
 # @date: 2025
 ################################################################################
 """
-This module defines endpoints to fetch job listings from Google Sheets.
-Provides both cached and fresh data retrieval with proper error handling.
+Shared utilities for job-related endpoints.
+Contains common functions for Google Sheets integration and caching.
 """
 
 # Native imports
-import os
 from typing import Dict, Any, List
-from datetime import datetime, timedelta
-import json
+from datetime import datetime
 
 # Third-party imports
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import HTTPException
 import requests
 
 # Other files imports
 from src.utils.custom_logger import log_handler
-from src.utils.limiter import limiter as SlowLimiter
 from src.core_specs.configuration.config_loader import config_loader
 
-"""VARIABLES-----------------------------------------------------------"""
-# Cache for job data
+"""CACHE MANAGEMENT-----------------------------------------------------------"""
+# Cache for job data (shared across endpoints)
 _jobs_cache = {
     "data": [],
     "last_updated": None,
     "cache_duration": 300  # 5 minutes in seconds
 }
 
-"""API ROUTER-----------------------------------------------------------"""
-router = APIRouter(
-    prefix=config_loader['endpoints']['get_jobs_endpoint']['endpoint_prefix'],
-    tags=[config_loader['endpoints']['get_jobs_endpoint']['endpoint_tag']],
-)
+def get_jobs_cache() -> Dict[str, Any]:
+    """Get the current jobs cache."""
+    return _jobs_cache
 
-"""HELPER FUNCTIONS-----------------------------------------------------------"""
+def is_cache_valid() -> bool:
+    """Check if the current cache is still valid."""
+    if not _jobs_cache["last_updated"]:
+        return False
+    
+    cache_age = datetime.now() - _jobs_cache["last_updated"]
+    return cache_age.total_seconds() < _jobs_cache["cache_duration"]
+
+def update_cache(jobs: List[Dict[str, str]]) -> None:
+    """Update the jobs cache with new data."""
+    _jobs_cache["data"] = jobs
+    _jobs_cache["last_updated"] = datetime.now()
+
+"""GOOGLE SHEETS INTEGRATION-----------------------------------------------------------"""
 def get_google_sheets_urls(sheet_id: str, sheet_name: str) -> List[str]:
     """
     Generate multiple Google Sheets CSV export URLs to try.
@@ -120,14 +128,6 @@ def parse_csv_to_jobs(csv_text: str) -> List[Dict[str, str]]:
         log_handler.error(f"Error parsing CSV: {e}")
         return []
 
-def is_cache_valid() -> bool:
-    """Check if the current cache is still valid."""
-    if not _jobs_cache["last_updated"]:
-        return False
-    
-    cache_age = datetime.now() - _jobs_cache["last_updated"]
-    return cache_age.total_seconds() < _jobs_cache["cache_duration"]
-
 async def fetch_jobs_from_sheets(force_refresh: bool = False) -> List[Dict[str, str]]:
     """
     Fetch jobs from Google Sheets with caching.
@@ -145,7 +145,7 @@ async def fetch_jobs_from_sheets(force_refresh: bool = False) -> List[Dict[str, 
     
     # Get configuration
     sheet_id = config_loader['defaults']['doc_id']
-    sheet_name = config_loader['defaults']['job_sheet_name']
+    sheet_name = config_loader['defaults']['sheet_1_name']
     
     if not sheet_id:
         raise HTTPException(status_code=500, detail="Google Sheet ID not configured")
@@ -178,8 +178,7 @@ async def fetch_jobs_from_sheets(force_refresh: bool = False) -> List[Dict[str, 
             
             if jobs:
                 # Update cache
-                _jobs_cache["data"] = jobs
-                _jobs_cache["last_updated"] = datetime.now()
+                update_cache(jobs)
                 
                 log_handler.info(f"Successfully fetched {len(jobs)} jobs from Google Sheets")
                 return jobs
@@ -198,71 +197,3 @@ async def fetch_jobs_from_sheets(force_refresh: bool = False) -> List[Dict[str, 
         status_code=503, 
         detail="Unable to fetch job data from Google Sheets. Please check sheet configuration and accessibility."
     )
-
-"""ENDPOINTS-----------------------------------------------------------"""
-@router.get(config_loader['endpoints']['get_jobs_endpoint']['endpoint_route'])
-@SlowLimiter.limit(
-    f"{config_loader['endpoints']['get_jobs_endpoint']['request_limit']}/"
-    f"{config_loader['endpoints']['get_jobs_endpoint']['unit_of_time_for_limit']}"
-)
-async def get_jobs_endpoint(request: Request) -> Dict[str, Any]:
-    """
-    Fetch job listings from Google Sheets.
-    
-    Returns cached data if available and fresh, otherwise fetches new data.
-    
-    Parameters:
-        request (Request): The incoming HTTP request for rate limiting.
-        
-    Returns:
-        dict: JSON response containing job listings and metadata
-    """
-    try:
-        jobs = await fetch_jobs_from_sheets(force_refresh=False)
-        
-        return {
-            "success": True,
-            "data": jobs,
-            "count": len(jobs),
-            "last_updated": _jobs_cache["last_updated"].isoformat() if _jobs_cache["last_updated"] else None,
-            "cached": is_cache_valid()
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        log_handler.error(f"Unexpected error in get_jobs_endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@router.post(config_loader['endpoints']['refresh_jobs_endpoint']['endpoint_route'])
-@SlowLimiter.limit(
-    f"{config_loader['endpoints']['refresh_jobs_endpoint']['request_limit']}/"
-    f"{config_loader['endpoints']['refresh_jobs_endpoint']['unit_of_time_for_limit']}"
-)
-async def refresh_jobs_endpoint(request: Request) -> Dict[str, Any]:
-    """
-    Force refresh job listings from Google Sheets, bypassing cache.
-    
-    Parameters:
-        request (Request): The incoming HTTP request for rate limiting.
-        
-    Returns:
-        dict: JSON response containing fresh job listings and metadata
-    """
-    try:
-        jobs = await fetch_jobs_from_sheets(force_refresh=True)
-        
-        return {
-            "success": True,
-            "data": jobs,
-            "count": len(jobs),
-            "last_updated": _jobs_cache["last_updated"].isoformat(),
-            "cached": False,
-            "message": "Job data refreshed successfully"
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        log_handler.error(f"Unexpected error in refresh_jobs_endpoint: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
