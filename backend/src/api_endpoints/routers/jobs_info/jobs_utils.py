@@ -145,7 +145,7 @@ async def fetch_jobs_from_sheets(force_refresh: bool = False) -> List[Dict[str, 
     
     # Get configuration
     sheet_id = config_loader['defaults']['doc_id']
-    sheet_name = config_loader['defaults']['sheet_1_name']
+    sheet_name = config_loader['defaults']['job_sheet_name']
     
     if not sheet_id:
         raise HTTPException(status_code=500, detail="Google Sheet ID not configured")
