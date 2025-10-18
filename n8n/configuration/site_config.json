@@ -1,7 +1,7 @@
 {
     "sheet_config": {
-        "doc_id": "",
-        "sheet_1_name": ""
+        "doc_id": "dummy",
+        "job_sheet_name": "dummy"
     },
     "search_config": {
         "maxPagesPerQuery": 3,
